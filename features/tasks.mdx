@@ -1,0 +1,465 @@
+---
+title: Tasks
+description: Configure and run build tasks, tests, and custom commands with Zed's task runner
+---
+
+## Overview
+
+Zed's task system allows you to configure and execute build commands, tests, and custom tasks directly from the editor. Tasks integrate with the terminal and can be configured per-project or globally.
+
+## Task Structure
+
+### Task Template
+
+<CodeGroup>
+```rust task/src/task.rs
+/// Baseline interface of Tasks in Zed
+pub struct TaskTemplate {
+    // Task configuration
+}
+
+/// Task identifier, unique within the application.
+#[derive(Default, Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Deserialize)]
+pub struct TaskId(pub String);
+```
+</CodeGroup>
+
+### Resolved Task
+
+When a task template is resolved with context, it becomes a runnable task:
+
+<CodeGroup>
+```rust task/src/task.rs
+/// A final form of the TaskTemplate, resolved with context and ready to spawn.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ResolvedTask {
+    /// A way to distinguish tasks produced by the same template
+    pub id: TaskId,
+    /// A template the task got resolved from.
+    original_task: TaskTemplate,
+    /// Full, unshortened label of the task
+    pub resolved_label: String,
+    /// Variables that were substituted during resolution
+    substituted_variables: HashSet<VariableName>,
+    /// Further actions after the task is spawned
+    pub resolved: SpawnInTerminal,
+}
+
+impl ResolvedTask {
+    /// A task template before the resolution.
+    pub fn original_task(&self) -> &TaskTemplate {
+        &self.original_task
+    }
+
+    /// Variables that were substituted during the task template resolution.
+    pub fn substituted_variables(&self) -> &HashSet<VariableName> {
+        &self.substituted_variables
+    }
+
+    /// A human-readable label to display in the UI.
+    pub fn display_label(&self) -> &str {
+        self.resolved.label.as_str()
+    }
+}
+```
+</CodeGroup>
+
+## Spawning Tasks
+
+### Task Modal
+
+<CodeGroup>
+```rust tasks_ui/src/tasks_ui.rs
+pub use modal::{Rerun, ShowAttachModal, Spawn, TaskOverrides, TasksModal};
+
+pub fn init(cx: &mut App) {
+    cx.observe_new(
+        |workspace: &mut Workspace, _: Option<&mut Window>, _: &mut Context<Workspace>| {
+            workspace
+                .register_action(spawn_task_or_modal)
+                .register_action(move |workspace, action: &modal::Rerun, window, cx| {
+                    // Rerun task logic
+                });
+        },
+    )
+    .detach();
+}
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+Shift+R` - Spawn task (opens modal)
+- `Cmd+Alt+R` - Rerun last task
+- `Ctrl+Alt+Shift+R` - Spawn task in center pane
+
+### Spawn Strategies
+
+Tasks can be spawned in different ways:
+
+<CodeGroup>
+```rust tasks_ui/src/modal.rs
+pub enum Spawn {
+    /// Spawn by task name
+    ByName {
+        task_name: String,
+        reveal_target: Option<RevealTarget>,
+    },
+    /// Spawn by tag
+    ByTag {
+        task_tag: String,
+        reveal_target: Option<RevealTarget>,
+    },
+    /// Show modal to select task
+    ViaModal {
+        reveal_target: Option<RevealTarget>,
+    },
+}
+```
+</CodeGroup>
+
+Example keybinding configurations:
+
+```json
+{
+  "bindings": {
+    "cmd-shift-t": ["task::Spawn", { "task_name": "test", "reveal_target": "dock" }],
+    "cmd-shift-b": ["task::Spawn", { "task_tag": "build" }]
+  }
+}
+```
+
+## Task Variables
+
+Tasks support variable substitution for dynamic configuration:
+
+<CodeGroup>
+```rust task/src/task.rs
+/// Variables available for use in TaskContext
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
+pub enum VariableName {
+    /// An absolute path of the currently opened file.
+    File,
+    /// A path of the currently opened file (relative to worktree root).
+    RelativeFile,
+    /// A path of the currently opened file's directory (relative to worktree root).
+    RelativeDir,
+    /// The currently opened filename.
+    Filename,
+    /// The path to a parent directory of a currently opened file.
+    Dirname,
+    /// Stem (filename without extension) of the currently opened file.
+    Stem,
+    /// An absolute path of the currently opened worktree.
+    WorktreeRoot,
+    /// A symbol text, that contains latest cursor/selection position.
+    Symbol,
+    /// A row with the latest cursor/selection position.
+    Row,
+    /// A column with the latest cursor/selection position.
+    Column,
+    /// Text from the latest selection.
+    SelectedText,
+    /// The symbol selected by the tagging system (@run capture).
+    RunnableSymbol,
+    /// Open a Picker to select a process ID (debug configs only).
+    PickProcessId,
+    /// Custom variable from plugins or external sources.
+    Custom(Cow<'static, str>),
+}
+
+impl VariableName {
+    /// Generates a `$VARIABLE`-like string value for templates.
+    pub fn template_value(&self) -> String {
+        format!("${self}")
+    }
+    
+    /// Generates `"$VARIABLE"` for values with spaces.
+    pub fn template_value_with_whitespace(&self) -> String {
+        format!("\"${self}\"")
+    }
+}
+```
+</CodeGroup>
+
+### Using Variables
+
+In your task configuration:
+
+```json
+{
+  "label": "Build $ZED_STEM",
+  "command": "cargo",
+  "args": ["build", "--bin", "$ZED_STEM"],
+  "cwd": "$ZED_WORKTREE_ROOT"
+}
+```
+
+## Terminal Integration
+
+Tasks run in the integrated terminal:
+
+<CodeGroup>
+```rust task/src/task.rs
+/// Contains all information needed to spawn a terminal tab for a task.
+pub struct SpawnInTerminal {
+    /// Task ID for tab affinity.
+    pub id: TaskId,
+    /// Full unshortened form of `label` field.
+    pub full_label: String,
+    /// Human readable name of the terminal tab.
+    pub label: String,
+    /// Executable command to spawn.
+    pub command: Option<String>,
+    /// Arguments to the command.
+    pub args: Vec<String>,
+    /// Command and args joined for display.
+    pub command_label: String,
+    /// Current working directory.
+    pub cwd: Option<PathBuf>,
+    /// Environment variable overrides.
+    pub env: HashMap<String, String>,
+    /// Whether to use a new terminal tab.
+    pub use_new_terminal: bool,
+    /// Whether to allow concurrent runs.
+    pub allow_concurrent_runs: bool,
+    /// What to do after the command starts.
+    pub reveal: RevealStrategy,
+    /// Where to show terminal output.
+    pub reveal_target: RevealTarget,
+    /// What to do after the command finishes.
+    pub hide: HideStrategy,
+    /// Which shell to use.
+    pub shell: Shell,
+    /// Whether to show task summary.
+    pub show_summary: bool,
+    /// Whether to show the command line.
+    pub show_command: bool,
+    /// Whether to show rerun button.
+    pub show_rerun: bool,
+}
+```
+</CodeGroup>
+
+### Reveal Strategies
+
+<CodeGroup>
+```rust task/src/task_template.rs
+/// What to do with the terminal pane after spawning
+pub enum RevealStrategy {
+    /// Always reveal the terminal
+    Always,
+    /// Never reveal the terminal
+    Never,
+}
+
+/// Where to show task output
+pub enum RevealTarget {
+    /// Show in the dock
+    Dock,
+    /// Show in the center pane
+    Center,
+}
+
+/// What to do after the task completes
+pub enum HideStrategy {
+    /// Never hide
+    Never,
+    /// Hide on success
+    OnSuccess,
+    /// Always hide
+    Always,
+}
+```
+</CodeGroup>
+
+## Task Context
+
+Tasks are resolved with context from the current editor state:
+
+<CodeGroup>
+```rust tasks_ui/src/tasks_ui.rs
+pub fn task_contexts(
+    workspace: &Workspace,
+    window: &mut Window,
+    cx: &mut App,
+) -> Task<TaskContexts> {
+    let active_item = workspace.active_item(cx);
+    let active_worktree = active_item
+        .as_ref()
+        .and_then(|item| item.project_path(cx))
+        .map(|project_path| project_path.worktree_id)
+        .filter(|worktree_id| {
+            workspace
+                .project()
+                .read(cx)
+                .worktree_for_id(*worktree_id, cx)
+                .is_some_and(|worktree| is_visible_directory(&worktree, cx))
+        })
+        .or_else(|| {
+            workspace
+                .visible_worktrees(cx)
+                .next()
+                .map(|tree| tree.read(cx).id())
+        });
+
+    let active_editor = active_item.and_then(|item| item.act_as::<Editor>(cx));
+    // ... gather context
+}
+```
+</CodeGroup>
+
+## Task Configuration Files
+
+Tasks can be configured in multiple formats:
+
+### Zed Tasks Format
+
+Create a `.zed/tasks.json` file:
+
+```json
+[
+  {
+    "label": "cargo check",
+    "command": "cargo",
+    "args": ["check", "--all-targets"],
+    "tags": ["build"]
+  },
+  {
+    "label": "run tests",
+    "command": "cargo",
+    "args": ["test"],
+    "tags": ["test"]
+  }
+]
+```
+
+### VS Code Tasks Format
+
+<CodeGroup>
+```rust task/src/vscode_format.rs
+pub use vscode_format::VsCodeTaskFile;
+```
+</CodeGroup>
+
+Zed supports VS Code's `tasks.json` format:
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "cargo build",
+      "group": "build"
+    }
+  ]
+}
+```
+
+### Debug Tasks Format
+
+<CodeGroup>
+```rust task/src/debug_format.rs
+pub use debug_format::{
+    AttachRequest, BuildTaskDefinition, DebugRequest, DebugScenario,
+    DebugTaskFile, LaunchRequest, Request, ZedDebugConfig,
+};
+```
+</CodeGroup>
+
+## Rerunning Tasks
+
+Zed tracks the last executed task and allows quick reruns:
+
+<CodeGroup>
+```rust tasks_ui/src/modal.rs
+pub struct Rerun {
+    pub task_id: Option<String>,
+    pub reevaluate_context: bool,
+    pub allow_concurrent_runs: Option<bool>,
+    pub use_new_terminal: Option<bool>,
+}
+```
+</CodeGroup>
+
+**Options:**
+- `reevaluate_context` - Re-evaluate task variables from current context
+- `allow_concurrent_runs` - Override concurrent execution setting
+- `use_new_terminal` - Force new or reuse existing terminal
+
+## Task Filtering
+
+Tasks can be filtered by name or tag:
+
+<CodeGroup>
+```rust tasks_ui/src/tasks_ui.rs
+pub fn spawn_tasks_filtered<F>(
+    mut predicate: F,
+    overrides: Option<TaskOverrides>,
+    window: &mut Window,
+    cx: &mut Context<Workspace>,
+) -> Task<anyhow::Result<()>>
+where
+    F: FnMut((&TaskSourceKind, &TaskTemplate)) -> bool + 'static,
+{
+    // Filter and spawn matching tasks
+}
+```
+</CodeGroup>
+
+## Shell Configuration
+
+<CodeGroup>
+```rust task/src/task.rs
+pub use util::shell::{Shell, ShellKind};
+pub use util::shell_builder::ShellBuilder;
+```
+</CodeGroup>
+
+Tasks can specify which shell to use:
+- System shell
+- Bash
+- Zsh
+- Fish
+- PowerShell
+- Custom shell
+
+## Task Sources
+
+Tasks can come from multiple sources:
+
+- **Static tasks** - Defined in configuration files
+- **Language servers** - Provided by LSP servers
+- **Plugins** - Custom task providers
+- **Runnables** - Code lens run commands
+
+<CodeGroup>
+```rust task/src/static_source.rs
+pub mod static_source;
+```
+</CodeGroup>
+
+## Nearest Task
+
+Run the nearest available task from cursor position:
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Spawns the nearest available task from the current cursor position.
+pub struct SpawnNearestTask {
+    pub reveal: task::RevealStrategy,
+}
+```
+</CodeGroup>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Terminal" icon="terminal" href="/features/terminal">
+    Integrated terminal where tasks execute
+  </Card>
+  <Card title="Editing" icon="pen" href="/features/editing">
+    Code editing and task invocation
+  </Card>
+</CardGroup>

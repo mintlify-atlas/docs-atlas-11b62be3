@@ -1,0 +1,445 @@
+---
+title: Theme Extensions
+description: Create custom color themes and icon themes for Zed
+---
+
+# Theme Extensions
+
+Theme extensions customize Zed's appearance with color schemes and icon sets. Zed supports two types of themes:
+
+- **Color themes**: Define colors for the editor, UI, and syntax highlighting
+- **Icon themes**: Provide custom icons for files and folders
+
+## Color Themes
+
+Color themes control all colors in Zed, from editor backgrounds to syntax highlighting.
+
+### Creating a Theme Extension
+
+**Directory structure**:
+
+```
+my-theme/
+  extension.toml
+  themes/
+    my-theme-light.json
+    my-theme-dark.json
+  LICENSE
+```
+
+**extension.toml**:
+
+```toml
+id = "my-theme-theme"  # Note: suffix with -theme
+name = "My Theme"
+version = "0.1.0"
+schema_version = 1
+authors = ["Your Name <you@example.com>"]
+description = "A beautiful theme for Zed"
+repository = "https://github.com/username/my-theme"
+
+themes = ["themes/my-theme-light.json", "themes/my-theme-dark.json"]
+```
+
+**Important**: Theme extension IDs must end with `-theme` to be accepted by the extension registry.
+
+### Theme JSON Schema
+
+Themes follow the [Zed Theme JSON Schema v0.2.0](https://zed.dev/schema/themes/v0.2.0.json).
+
+**Example theme file**:
+
+```json
+{
+  "$schema": "https://zed.dev/schema/themes/v0.2.0.json",
+  "name": "My Theme",
+  "author": "Your Name",
+  "themes": [
+    {
+      "name": "My Theme Light",
+      "appearance": "light",
+      "style": {
+        "background": "#ffffff",
+        "foreground": "#24292e",
+        "accent": "#0366d6",
+        
+        "border": "#e1e4e8",
+        "border.variant": "#d1d5da",
+        "border.focused": "#0366d6",
+        "border.disabled": "#e1e4e8",
+        
+        "elevated_surface.background": "#f6f8fa",
+        "surface.background": "#ffffff",
+        
+        "element.background": "#ffffff",
+        "element.hover": "#f6f8fa",
+        "element.active": "#e1e4e8",
+        "element.selected": "#e1e4e8",
+        "element.disabled": "#f6f8fa",
+        
+        "text": "#24292e",
+        "text.muted": "#6a737d",
+        "text.placeholder": "#959da5",
+        "text.disabled": "#959da5",
+        "text.accent": "#0366d6",
+        
+        "icon": "#24292e",
+        "icon.muted": "#6a737d",
+        "icon.disabled": "#959da5",
+        "icon.placeholder": "#959da5",
+        "icon.accent": "#0366d6",
+        
+        "status_bar.background": "#ffffff",
+        "title_bar.background": "#ffffff",
+        "toolbar.background": "#ffffff",
+        "tab_bar.background": "#ffffff",
+        "tab.inactive_background": "#f6f8fa",
+        "tab.active_background": "#ffffff",
+        
+        "editor.background": "#ffffff",
+        "editor.gutter.background": "#ffffff",
+        "editor.subheader.background": "#f6f8fa",
+        "editor.active_line.background": "#f6f8fa",
+        "editor.highlighted_line.background": "#fffbdd",
+        "editor.line_number": "#959da5",
+        "editor.active_line_number": "#24292e",
+        "editor.wrap_guide": "#e1e4e8",
+        "editor.active_wrap_guide": "#d1d5da",
+        
+        "terminal.background": "#ffffff",
+        "terminal.foreground": "#24292e",
+        "terminal.ansi.black": "#24292e",
+        "terminal.ansi.red": "#d73a49",
+        "terminal.ansi.green": "#28a745",
+        "terminal.ansi.yellow": "#dbab09",
+        "terminal.ansi.blue": "#0366d6",
+        "terminal.ansi.magenta": "#5a32a3",
+        "terminal.ansi.cyan": "#0598bc",
+        "terminal.ansi.white": "#6a737d",
+        "terminal.ansi.bright_black": "#959da5",
+        "terminal.ansi.bright_red": "#cb2431",
+        "terminal.ansi.bright_green": "#22863a",
+        "terminal.ansi.bright_yellow": "#b08800",
+        "terminal.ansi.bright_blue": "#005cc5",
+        "terminal.ansi.bright_magenta": "#5a32a3",
+        "terminal.ansi.bright_cyan": "#3192aa",
+        "terminal.ansi.bright_white": "#d1d5da",
+        
+        "syntax": {
+          "attribute": { "color": "#6f42c1" },
+          "boolean": { "color": "#005cc5" },
+          "comment": { "color": "#6a737d", "font_style": "italic" },
+          "comment.doc": { "color": "#6a737d" },
+          "constant": { "color": "#005cc5" },
+          "constructor": { "color": "#6f42c1" },
+          "embedded": { "color": "#24292e" },
+          "emphasis": { "font_style": "italic" },
+          "emphasis.strong": { "font_weight": 700 },
+          "enum": { "color": "#6f42c1" },
+          "function": { "color": "#6f42c1" },
+          "keyword": { "color": "#d73a49" },
+          "link_text": { "color": "#032f62", "font_style": "underline" },
+          "link_uri": { "color": "#032f62" },
+          "number": { "color": "#005cc5" },
+          "operator": { "color": "#d73a49" },
+          "property": { "color": "#005cc5" },
+          "punctuation": { "color": "#24292e" },
+          "punctuation.bracket": { "color": "#24292e" },
+          "punctuation.delimiter": { "color": "#24292e" },
+          "punctuation.list_marker": { "color": "#24292e" },
+          "string": { "color": "#032f62" },
+          "string.escape": { "color": "#22863a" },
+          "string.regex": { "color": "#22863a" },
+          "string.special": { "color": "#22863a" },
+          "tag": { "color": "#22863a" },
+          "title": { "color": "#6f42c1", "font_weight": 700 },
+          "type": { "color": "#6f42c1" },
+          "variable": { "color": "#24292e" },
+          "variable.special": { "color": "#e36209" }
+        }
+      }
+    }
+  ]
+}
+```
+
+### Theme Structure
+
+A theme JSON file contains:
+
+1. **Theme Family Metadata**:
+   - `name`: Theme family name
+   - `author`: Creator name
+   - `themes`: Array of theme variants
+
+2. **Theme Variant**:
+   - `name`: Specific theme name (e.g., "My Theme Light")
+   - `appearance`: `"light"` or `"dark"`
+   - `style`: Color definitions
+
+3. **Style Properties**:
+
+   **Base Colors**:
+   - `background`: Main background
+   - `foreground`: Main text
+   - `accent`: Accent color for emphasis
+
+   **Borders**:
+   - `border`: Default border
+   - `border.variant`: Secondary border
+   - `border.focused`: Focused element border
+   - `border.disabled`: Disabled element border
+
+   **Surfaces**:
+   - `surface.background`: Main surface background
+   - `elevated_surface.background`: Elevated panels
+
+   **Elements**:
+   - `element.background`: Default element background
+   - `element.hover`: Hovered element
+   - `element.active`: Active element
+   - `element.selected`: Selected element
+   - `element.disabled`: Disabled element
+
+   **Text**:
+   - `text`: Default text
+   - `text.muted`: Muted text
+   - `text.placeholder`: Placeholder text
+   - `text.disabled`: Disabled text
+   - `text.accent`: Accent text
+
+   **Icons**:
+   - `icon`: Default icon
+   - `icon.muted`: Muted icon
+   - `icon.disabled`: Disabled icon
+   - `icon.accent`: Accent icon
+
+   **Editor**:
+   - `editor.background`: Editor background
+   - `editor.gutter.background`: Gutter background
+   - `editor.active_line.background`: Current line highlight
+   - `editor.line_number`: Line number color
+   - `editor.active_line_number`: Current line number
+   - `editor.wrap_guide`: Wrap guide line
+
+   **Terminal**:
+   - `terminal.background`: Terminal background
+   - `terminal.foreground`: Terminal text
+   - `terminal.ansi.*`: ANSI color palette
+   - `terminal.ansi.bright_*`: Bright ANSI colors
+
+   **UI Components**:
+   - `status_bar.background`: Status bar
+   - `title_bar.background`: Title bar
+   - `toolbar.background`: Toolbar
+   - `tab_bar.background`: Tab bar
+   - `tab.active_background`: Active tab
+   - `tab.inactive_background`: Inactive tab
+
+4. **Syntax Highlighting**:
+
+The `syntax` object defines colors for code tokens. Each entry can have:
+- `color`: Hex color code
+- `font_style`: `"italic"`, `"oblique"`, or `"normal"`
+- `font_weight`: Number (e.g., `400`, `700`) or `"bold"`
+
+**Available syntax tokens**:
+- `attribute`, `boolean`, `comment`, `comment.doc`
+- `constant`, `constant.builtin`, `constructor`
+- `embedded`, `emphasis`, `emphasis.strong`
+- `enum`, `function`, `keyword`, `label`
+- `link_text`, `link_uri`
+- `number`, `operator`
+- `property`, `punctuation`, `punctuation.bracket`, `punctuation.delimiter`
+- `string`, `string.escape`, `string.regex`, `string.special`
+- `tag`, `title`
+- `type`, `type.builtin`
+- `variable`, `variable.special`, `variable.parameter`
+
+### Using the Theme Builder
+
+Zed provides an interactive [Theme Builder](https://zed.dev/theme-builder) for creating themes:
+
+1. Visit [zed.dev/theme-builder](https://zed.dev/theme-builder)
+2. Select a base theme to start from
+3. Customize colors using the color pickers
+4. Preview your theme in real-time
+5. Export the JSON and save it to your extension
+
+### Multiple Theme Variants
+
+One extension can provide multiple theme variants:
+
+```json
+{
+  "name": "My Theme Family",
+  "author": "Your Name",
+  "themes": [
+    {
+      "name": "My Theme Light",
+      "appearance": "light",
+      "style": { /* ... */ }
+    },
+    {
+      "name": "My Theme Dark",
+      "appearance": "dark",
+      "style": { /* ... */ }
+    },
+    {
+      "name": "My Theme Dark HC",
+      "appearance": "dark",
+      "style": { /* high contrast colors */ }
+    }
+  ]
+}
+```
+
+Or separate files:
+
+```toml
+# extension.toml
+themes = [
+  "themes/my-theme-light.json",
+  "themes/my-theme-dark.json",
+  "themes/my-theme-hc.json"
+]
+```
+
+## Icon Themes
+
+Icon themes customize file and folder icons in the project panel.
+
+### Creating an Icon Theme Extension
+
+**Directory structure**:
+
+```
+my-icons/
+  extension.toml
+  icon-themes/
+    my-icons.json
+  icons/
+    file.svg
+    folder.svg
+    javascript.svg
+    rust.svg
+    # ... more icons
+  LICENSE
+```
+
+**extension.toml**:
+
+```toml
+id = "my-icons"
+name = "My Icons"
+version = "0.1.0"
+schema_version = 1
+authors = ["Your Name <you@example.com>"]
+description = "Custom icon theme"
+repository = "https://github.com/username/my-icons"
+
+icon_themes = ["icon-themes/my-icons.json"]
+```
+
+### Icon Theme Format
+
+Icon themes map file types and folder names to SVG icons:
+
+```json
+{
+  "name": "My Icons",
+  "author": "Your Name",
+  "version": "1.0.0",
+  "icons": {
+    "default_file": "icons/file.svg",
+    "default_folder": "icons/folder.svg",
+    "default_folder_open": "icons/folder-open.svg",
+    
+    "file_types": {
+      ".rs": "icons/rust.svg",
+      ".js": "icons/javascript.svg",
+      ".ts": "icons/typescript.svg",
+      ".json": "icons/json.svg",
+      ".md": "icons/markdown.svg"
+    },
+    
+    "folder_names": {
+      "src": "icons/folder-src.svg",
+      "test": "icons/folder-test.svg",
+      "docs": "icons/folder-docs.svg",
+      ".git": "icons/folder-git.svg",
+      "node_modules": "icons/folder-node.svg"
+    },
+    
+    "file_names": {
+      "Cargo.toml": "icons/cargo.svg",
+      "package.json": "icons/npm.svg",
+      "README.md": "icons/readme.svg",
+      ".gitignore": "icons/git.svg"
+    }
+  }
+}
+```
+
+**Icon matching priority** (highest to lowest):
+1. `file_names`: Exact file name match
+2. `file_types`: File extension match
+3. `default_file`: Fallback for all files
+4. `folder_names`: Exact folder name match
+5. `default_folder`: Fallback for all folders
+
+### SVG Icon Guidelines
+
+- Use SVG format (not PNG or other formats)
+- Recommended size: 16x16 pixels viewBox
+- Use currentColor for colors to respect theme
+- Keep file size small (< 2KB ideal)
+- Avoid embedded fonts or complex filters
+
+**Example SVG**:
+
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <path fill="currentColor" d="M8 1l7 4v6l-7 4-7-4V5l7-4z"/>
+</svg>
+```
+
+## Publishing Theme Extensions
+
+Theme extensions follow the same publishing process as other extensions:
+
+1. Create a Git repository with `extension.toml` and theme files
+2. Add a valid license (MIT, Apache 2.0, etc.)
+3. Open a PR to [zed-industries/extensions](https://github.com/zed-industries/extensions)
+4. Add your extension as a submodule
+5. Update `extensions.toml` with your extension entry
+
+See [Developing Extensions](./developing.mdx) for detailed publishing steps.
+
+## Example Theme Extensions
+
+Zed includes several themes in the registry:
+
+- [One Dark/Light](https://github.com/zed-industries/zed/tree/main/assets/themes/one)
+- [Gruvbox](https://github.com/zed-industries/zed/tree/main/assets/themes/gruvbox)
+- [Ayu](https://github.com/zed-industries/zed/tree/main/assets/themes/ayu)
+
+Browse community themes in the [Extension Gallery](https://zed.dev/extensions?category=themes).
+
+## Tips for Theme Design
+
+1. **Test in both modes**: Create both light and dark variants
+2. **Check contrast**: Ensure text is readable against backgrounds
+3. **Test syntax highlighting**: Try different languages (not just your favorites)
+4. **Preview in context**: Test with real code files, not just samples
+5. **Consider accessibility**: Follow WCAG guidelines for contrast ratios
+6. **Use semantic colors**: Don't just match existing themes; think about meaning
+7. **Iterate**: Themes improve with use and feedback
+
+## Resources
+
+- [Theme JSON Schema](https://zed.dev/schema/themes/v0.2.0.json)
+- [Zed Theme Builder](https://zed.dev/theme-builder)
+- [Theme Blog Post](https://zed.dev/blog/user-themes-now-in-preview)
+- [Extension Registry](https://github.com/zed-industries/extensions)
+- [Example Themes](https://github.com/zed-industries/zed/tree/main/assets/themes)

@@ -1,0 +1,276 @@
+---
+title: Installation
+description: Download and install Zed on macOS, Linux, or Windows. Includes Homebrew, package managers, and direct download options.
+---
+
+# Installing Zed
+
+Zed is available for macOS, Linux, and Windows. Choose your platform below to get started.
+
+## macOS
+
+### Direct Download
+
+Download the latest stable build from the [Zed download page](https://zed.dev/download). The download is a `.dmg` file—open it and drag Zed to your Applications folder.
+
+For the **preview build**, which receives updates about a week ahead of stable, visit the [preview releases page](https://zed.dev/releases/preview).
+
+After installation, Zed automatically checks for updates and prompts you when a new version is available.
+
+### Homebrew
+
+Install Zed using Homebrew:
+
+<CodeGroup>
+```bash Stable
+brew install --cask zed
+```
+
+```bash Preview
+brew install --cask zed@preview
+```
+</CodeGroup>
+
+### System Requirements
+
+Zed supports the following macOS releases:
+
+| Version       | Codename | Apple Status   | Zed Status          |
+| ------------- | -------- | -------------- | ------------------- |
+| macOS 26.x    | Tahoe    | Supported      | Supported           |
+| macOS 15.x    | Sequoia  | Supported      | Supported           |
+| macOS 14.x    | Sonoma   | Supported      | Supported           |
+| macOS 13.x    | Ventura  | Supported      | Supported           |
+| macOS 12.x    | Monterey | EOL 2024-09-16 | Supported           |
+| macOS 11.x    | Big Sur  | EOL 2023-09-26 | Partially Supported |
+| macOS 10.15.x | Catalina | EOL 2022-09-12 | Partially Supported |
+
+<Note>
+macOS Big Sur and Catalina do not support screen sharing via Zed Collaboration. These features require ScreenCaptureKit, available only on macOS 12 (Monterey) and newer.
+</Note>
+
+#### Mac Hardware
+
+Zed supports machines with Intel (x86_64) or Apple Silicon (aarch64) processors:
+
+- MacBook Pro (Early 2015 and newer)
+- MacBook Air (Early 2015 and newer)
+- MacBook (Early 2016 and newer)
+- Mac Mini (Late 2014 and newer)
+- Mac Pro (Late 2013 or newer)
+- iMac (Late 2015 and newer)
+- iMac Pro (all models)
+- Mac Studio (all models)
+
+## Linux
+
+### Installation Script (Recommended)
+
+The fastest way to install Zed on Linux is using the official installation script:
+
+```bash
+curl -f https://zed.dev/install.sh | sh
+```
+
+This script supports `x86_64` and `aarch64` architectures on Ubuntu, Arch, Debian, RedHat, CentOS, Fedora, and more.
+
+#### Install a Specific Version
+
+You can specify a version using the `ZED_VERSION` environment variable:
+
+```bash
+# Install a specific version
+curl -f https://zed.dev/install.sh | ZED_VERSION=0.216.0 sh
+```
+
+#### Install Preview Build
+
+To install the preview build:
+
+```bash
+curl -f https://zed.dev/install.sh | ZED_CHANNEL=preview sh
+```
+
+### Package Managers
+
+Zed is available through several package managers:
+
+<CodeGroup>
+```bash Arch Linux
+sudo pacman -S zed
+```
+
+```bash Flatpak
+flatpak install flathub dev.zed.Zed
+```
+
+```bash Nix
+nix-env -iA nixpkgs.zed-editor
+```
+
+```bash Conda
+conda install -c conda-forge zed
+```
+</CodeGroup>
+
+<Warning>
+Third-party packages may not be completely up to date and may use different binary names (like `zedit` or `zeditor`).
+</Warning>
+
+See [Repology](https://repology.org/project/zed-editor/versions) for a complete list of Zed packages across distributions.
+
+### Manual Download
+
+Download the pre-built `.tar.gz` file for your architecture:
+
+- [zed-linux-x86_64.tar.gz](https://cloud.zed.dev/releases/stable/latest/download?asset=zed&arch=x86_64&os=linux&source=docs) ([preview](https://cloud.zed.dev/releases/preview/latest/download?asset=zed&arch=x86_64&os=linux&source=docs))
+- [zed-linux-aarch64.tar.gz](https://cloud.zed.dev/releases/stable/latest/download?asset=zed&arch=aarch64&os=linux&source=docs) ([preview](https://cloud.zed.dev/releases/preview/latest/download?asset=zed&arch=aarch64&os=linux&source=docs))
+
+Extract and create a symlink:
+
+```bash
+mkdir -p ~/.local
+# Extract zed to ~/.local/zed.app/
+tar -xvf <path/to/download>.tar.gz -C ~/.local
+# Link the zed binary to ~/.local/bin
+ln -sf ~/.local/zed.app/bin/zed ~/.local/bin/zed
+```
+
+For desktop integration, install the `.desktop` file:
+
+```bash
+install -D ~/.local/zed.app/share/applications/dev.zed.Zed.desktop -t ~/.local/share/applications
+sed -i "s|Icon=zed|Icon=$HOME/.local/zed.app/share/icons/hicolor/512x512/apps/zed.png|g" ~/.local/share/applications/dev.zed.Zed.desktop
+sed -i "s|Exec=zed|Exec=$HOME/.local/zed.app/bin/zed|g" ~/.local/share/applications/dev.zed.Zed.desktop
+```
+
+### System Requirements
+
+- 64-bit Intel/AMD (x86_64) or 64-bit Arm (aarch64) processor
+- Vulkan 1.3 driver
+- The following desktop portals:
+  - `org.freedesktop.portal.FileChooser`
+  - `org.freedesktop.portal.OpenURI`
+  - `org.freedesktop.portal.Secret` or `org.freedesktop.Secrets`
+
+## Windows
+
+### Direct Download
+
+Download the latest stable build from the [Zed download page](https://zed.dev/download). Run the installer and follow the setup wizard.
+
+For the **preview build**, visit the [preview releases page](https://zed.dev/releases/preview).
+
+### Windows Package Manager (winget)
+
+Install Zed using winget:
+
+```powershell
+winget install -e --id ZedIndustries.Zed
+```
+
+### System Requirements
+
+| Version                            | Zed Status |
+| ---------------------------------- | ---------- |
+| Windows 11, version 22H2 and later | Supported  |
+| Windows 10, version 1903 and later | Supported  |
+
+<Note>
+A 64-bit operating system is required to run Zed.
+</Note>
+
+#### Windows Hardware
+
+Zed supports machines with x64 (Intel, AMD) or Arm64 (Qualcomm) processors:
+
+- **Graphics**: GPU that supports DirectX 11 (most PCs from 2012+)
+- **Driver**: Current NVIDIA/AMD/Intel/Qualcomm driver (not Microsoft Basic Display Adapter)
+
+## Installing the CLI
+
+Zed includes a command-line tool for opening files and projects from the terminal.
+
+<Steps>
+  <Step title="Open Zed">
+    Launch the Zed application.
+  </Step>
+  
+  <Step title="Open Command Palette">
+    Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Linux/Windows).
+  </Step>
+  
+  <Step title="Run 'cli: install'">
+    Search for and run the `cli: install` command.
+  </Step>
+</Steps>
+
+This creates a `zed` command that you can use from any terminal:
+
+```bash
+zed .                    # Open current folder
+zed file.txt             # Open a file
+zed project/ file.txt    # Open a folder and a file
+```
+
+<Note>
+On Linux and Windows, the CLI is automatically included with Zed packages. The binary name may vary by distribution.
+</Note>
+
+## Verifying Installation
+
+Check that Zed is installed correctly:
+
+```bash
+zed --version
+```
+
+You should see output like:
+
+```
+zed 0.216.0
+```
+
+## Next Steps
+
+Now that you have Zed installed, head to the [Quick Start](/quickstart) guide to learn the essentials and start coding.
+
+<Card title="Quick Start Guide" icon="rocket" href="/quickstart">
+  Get up to speed with Zed's essential features and commands
+</Card>
+
+## Troubleshooting
+
+### macOS: "Zed is damaged" Warning
+
+If macOS reports that Zed is damaged, try:
+
+1. Right-click on Zed in Applications
+2. Select "Open" from the context menu
+3. Click "Open" in the dialog
+
+Or remove the quarantine attribute:
+
+```bash
+xattr -cr /Applications/Zed.app
+```
+
+### Linux: Graphics Issues
+
+If Zed fails to start with a `NoSupportedDeviceFound` error, verify Vulkan support:
+
+```bash
+vkcube
+```
+
+If this doesn't work, install Vulkan-compatible GPU drivers. See the [Arch Vulkan guide](https://wiki.archlinux.org/title/Vulkan) for troubleshooting steps.
+
+### Windows: Blank Window
+
+Ensure your GPU drivers are up to date:
+
+1. Visit your GPU manufacturer's website (NVIDIA, AMD, Intel, or Qualcomm)
+2. Download and install the latest drivers
+3. Restart your computer and try launching Zed again
+
+For more help, see the full [Troubleshooting](https://zed.dev/docs/troubleshooting) guide.

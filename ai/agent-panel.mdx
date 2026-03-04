@@ -1,0 +1,374 @@
+---
+title: Agent Panel
+description: Conversational AI interface for pair programming and code assistance
+---
+
+The Agent Panel is Zed's primary interface for conversational AI assistance. It provides a chat-like experience where you can discuss code, request changes, and collaborate with AI agents.
+
+## Opening the Agent Panel
+
+- **Keyboard shortcut**: `Cmd+Shift+A` (macOS) or `Ctrl+Shift+A` (Linux/Windows)
+- **Menu**: View → Toggle Agent Panel
+- **Command Palette**: "assistant: toggle focus"
+
+## Panel Layout
+
+The Agent Panel consists of:
+
+- **Navigation bar** - Access thread history and settings
+- **Thread view** - Current conversation with the AI
+- **Message editor** - Input area for your prompts
+- **Tool cards** - Visual representation of AI actions (edits, terminal commands, file reads)
+
+## Starting a Conversation
+
+### New Thread
+
+Create a new conversation thread:
+
+1. Click the **"+"** button in the navigation bar
+2. Or use `Cmd+N` (macOS) / `Ctrl+N` (Linux/Windows)
+3. Type your message in the editor
+4. Press `Enter` to send (or `Cmd+Enter` if `use_modifier_to_send` is enabled)
+
+### Text Thread
+
+For lightweight conversations without tool access:
+
+- Use the dropdown next to "+" and select "New Text Thread"
+- Text threads are faster and don't execute commands or edit files
+- Great for brainstorming, explanations, and code reviews
+
+## Adding Context
+
+Provide relevant context to improve AI responses:
+
+### File Context
+
+```
+@filename.rs Explain this authentication module
+```
+
+Mentions files from your project. Type `@` to see file suggestions.
+
+### Directory Context
+
+```
+@src/components/ Review the structure of my components
+```
+
+Includes all files in a directory.
+
+### Git Diff Context
+
+```
+@git:diff Review my uncommitted changes
+```
+
+Shares your working directory changes with the AI.
+
+### Diagnostic Context
+
+```
+@diagnostics Fix these TypeScript errors
+```
+
+Includes language server diagnostics (errors, warnings).
+
+### Terminal Context
+
+```
+@terminal Explain this error output
+```
+
+Shares recent terminal output.
+
+### Web Context
+
+```
+@https://docs.rs/serde Parse this documentation
+```
+
+Fetches and includes content from URLs.
+
+## AI Actions
+
+The agent can perform actions in your editor:
+
+### Code Editing
+
+When the AI suggests code changes, you'll see an **Edit Card** with:
+
+- **Diff preview** - See what will change before accepting
+- **Accept** button - Apply the changes
+- **Reject** button - Discard the suggestion
+- **Open in editor** - View changes in a full editor pane
+
+```
+Edit src/main.rs to add error handling to the parse function
+```
+
+### Terminal Commands
+
+AI can suggest and execute terminal commands:
+
+```
+Run the test suite
+```
+
+You'll see a **Terminal Card** with:
+
+- The command to be executed
+- **Approve** to run it
+- **Reject** to cancel
+- Real-time output once approved
+
+### File Operations
+
+```
+Create a new configuration file for the database connection
+```
+
+The AI can:
+- Create new files
+- Read file contents
+- Edit existing files
+- Move or rename files
+
+## Thread Management
+
+### Thread History
+
+Access past conversations:
+
+1. Click the **menu icon** (≡) in the navigation bar
+2. Select "View All" to see all threads
+3. Or view recent threads in the dropdown menu
+
+### Thread Search
+
+Find specific conversations:
+
+- In the history view, use the search box
+- Search by title, content, or date
+
+### Thread Export/Import
+
+**Export thread to clipboard**:
+```
+Cmd+Shift+C (macOS) or Ctrl+Shift+C (Linux/Windows)
+```
+
+**Load thread from clipboard**:
+```
+Cmd+Shift+V (macOS) or Ctrl+Shift+V (Linux/Windows)
+```
+
+## Agent Profiles
+
+Customize agent behavior with profiles:
+
+```json
+{
+  "agent": {
+    "default_profile": "write",
+    "profiles": {
+      "write": {
+        "name": "Code Writer",
+        "tools": {
+          "edit_file": true,
+          "create_file": true,
+          "terminal": false
+        },
+        "default_model": {
+          "provider": "anthropic",
+          "model": "claude-3-5-sonnet-20241022"
+        }
+      },
+      "review": {
+        "name": "Code Reviewer",
+        "tools": {
+          "edit_file": false,
+          "create_file": false,
+          "terminal": false
+        }
+      }
+    }
+  }
+}
+```
+
+Switch profiles from the Agent Panel settings.
+
+## Tool Permissions
+
+Control what the AI can do:
+
+```json
+{
+  "agent": {
+    "tool_permissions": {
+      "default": "confirm",
+      "tools": {
+        "terminal": {
+          "default": "confirm",
+          "always_allow": [
+            {"pattern": "^cargo test"}
+          ],
+          "always_deny": [
+            {"pattern": "^rm -rf"}
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+Permission modes:
+- `allow` - Execute without confirmation
+- `confirm` - Always ask first (default)
+- `deny` - Never allow
+
+## Model Selection
+
+Change the AI model during a conversation:
+
+1. Click the **model name** at the top of the panel
+2. Select from available models
+3. Your choice persists for the current thread
+
+## Advanced Features
+
+### Multi-file Editing
+
+The agent can edit multiple files in a single response:
+
+```
+Refactor the authentication system across all auth-related files
+```
+
+### Streaming Tools
+
+Enable streaming tool execution for faster iterations:
+
+```json
+{
+  "agent": {
+    "inline_assistant_use_streaming_tools": true
+  }
+}
+```
+
+### Extended Thinking
+
+For complex tasks, enable thinking mode:
+
+```json
+{
+  "agent": {
+    "default_model": {
+      "provider": "anthropic",
+      "model": "claude-3-7-sonnet-20250219",
+      "enable_thinking": true
+    }
+  }
+}
+```
+
+### Diff Review
+
+When edits are suggested, open a dedicated diff pane:
+
+- Click "Open Diff" in the navigation bar
+- Or use `Cmd+Shift+D` (macOS) / `Ctrl+Shift+D` (Linux/Windows)
+
+The diff pane shows all pending changes with syntax highlighting.
+
+## Settings
+
+### Panel Position
+
+```json
+{
+  "agent": {
+    "dock": "right"  // "left", "right", or "bottom"
+  }
+}
+```
+
+### Panel Size
+
+```json
+{
+  "agent": {
+    "default_width": 640,  // pixels, for left/right dock
+    "default_height": 320  // pixels, for bottom dock
+  }
+}
+```
+
+### Message Editor
+
+```json
+{
+  "agent": {
+    "use_modifier_to_send": false,  // if true, require Cmd+Enter to send
+    "message_editor_min_lines": 4   // minimum editor height
+  }
+}
+```
+
+### Notifications
+
+```json
+{
+  "agent": {
+    "notify_when_agent_waiting": "primary_screen",  // "all_screens" or "never"
+    "play_sound_when_agent_done": false
+  }
+}
+```
+
+## Keyboard Shortcuts
+
+| Action | macOS | Linux/Windows |
+|--------|-------|---------------|
+| Toggle panel | `Cmd+Shift+A` | `Ctrl+Shift+A` |
+| New thread | `Cmd+N` | `Ctrl+N` |
+| Send message | `Enter` | `Enter` |
+| New line | `Shift+Enter` | `Shift+Enter` |
+| Copy thread | `Cmd+Shift+C` | `Ctrl+Shift+C` |
+| Load thread | `Cmd+Shift+V` | `Ctrl+Shift+V` |
+| Open diff | `Cmd+Shift+D` | `Ctrl+Shift+D` |
+| History | `Cmd+Shift+H` | `Ctrl+Shift+H` |
+| Settings | `Cmd+,` | `Ctrl+,` |
+
+## Tips & Best Practices
+
+1. **Be specific** - Provide clear context about what you want to accomplish
+2. **Use mentions** - Reference specific files and code regions
+3. **Review changes** - Always check diffs before accepting edits
+4. **Iterate** - Have a conversation, don't expect perfection on the first try
+5. **Use profiles** - Create profiles for different workflows (coding, reviewing, debugging)
+6. **Check tool permissions** - Configure safe defaults to avoid accidental destructive operations
+
+## Troubleshooting
+
+### Agent not responding
+
+- Check your internet connection
+- Verify API keys in Settings → Language Models
+- Check the model selection (some models may be unavailable)
+
+### Context not being used
+
+- Ensure files are open or properly mentioned with `@`
+- Check that mentioned files exist in your project
+- Large files may be truncated (check model token limits)
+
+### Commands not executing
+
+- Verify tool permissions settings
+- Check that the terminal is accessible
+- Ensure the workspace is trusted

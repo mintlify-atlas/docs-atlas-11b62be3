@@ -1,0 +1,335 @@
+---
+title: Integrated Terminal
+description: Built-in terminal with shell integration, scrollback, and advanced features
+---
+
+## Overview
+
+Zed includes a fully integrated terminal emulator built on top of Alacritty's terminal engine, providing a native terminal experience directly within your editor.
+
+<CodeGroup>
+```rust terminal/src/terminal.rs
+pub struct Terminal {
+    // Terminal implementation using Alacritty's Term
+}
+```
+</CodeGroup>
+
+## Terminal Actions
+
+Zed's terminal supports a comprehensive set of actions for controlling terminal behavior.
+
+<CodeGroup>
+```rust terminal/src/terminal.rs
+actions!(
+    terminal,
+    [
+        /// Clears the terminal screen.
+        Clear,
+        /// Copies selected text to the clipboard.
+        Copy,
+        /// Pastes from the clipboard.
+        Paste,
+        /// Shows the character palette for special characters.
+        ShowCharacterPalette,
+        /// Searches for text in the terminal.
+        SearchTest,
+        /// Scrolls up by one line.
+        ScrollLineUp,
+        /// Scrolls down by one line.
+        ScrollLineDown,
+        /// Scrolls up by one page.
+        ScrollPageUp,
+        /// Scrolls down by one page.
+        ScrollPageDown,
+        /// Scrolls up by half a page.
+        ScrollHalfPageUp,
+        /// Scrolls down by half a page.
+        ScrollHalfPageDown,
+        /// Scrolls to the top of the terminal buffer.
+        ScrollToTop,
+        /// Scrolls to the bottom of the terminal buffer.
+        ScrollToBottom,
+        /// Toggles vi mode in the terminal.
+        ToggleViMode,
+        /// Selects all text in the terminal.
+        SelectAll,
+    ]
+);
+```
+</CodeGroup>
+
+## Opening Terminals
+
+**Keybindings:**
+- `Ctrl+~` - New terminal in current directory
+- ``Ctrl+` `` - Toggle terminal panel
+
+## Terminal Environment
+
+Zed sets up specialized environment variables for terminal sessions:
+
+<CodeGroup>
+```rust terminal/src/terminal.rs
+/// Inserts Zed-specific environment variables for terminal sessions.
+/// Used by both local terminals and remote terminals (via SSH).
+pub fn insert_zed_terminal_env(
+    env: &mut HashMap<String, String>,
+    version: &impl std::fmt::Display,
+) {
+    env.insert("ZED_TERM".to_string(), "true".to_string());
+    env.insert("TERM_PROGRAM".to_string(), "zed".to_string());
+    env.insert("TERM".to_string(), "xterm-256color".to_string());
+    env.insert("COLORTERM".to_string(), "truecolor".to_string());
+    env.insert("TERM_PROGRAM_VERSION".to_string(), version.to_string());
+}
+```
+</CodeGroup>
+
+### Environment Variables
+
+- `ZED_TERM=true` - Indicates the terminal is running in Zed
+- `TERM_PROGRAM=zed` - Program name identifier
+- `TERM=xterm-256color` - Terminal type for 256-color support
+- `COLORTERM=truecolor` - Enables true color support
+- `TERM_PROGRAM_VERSION` - Zed version number
+
+## Terminal Features
+
+### Scrollback Buffer
+
+The terminal maintains a scrollback buffer for reviewing previous output:
+
+<CodeGroup>
+```rust terminal/src/terminal.rs
+pub struct TerminalBounds {
+    pub cell_width: Pixels,
+    pub line_height: Pixels,
+    pub bounds: Bounds<Pixels>,
+}
+
+impl TerminalBounds {
+    pub fn num_lines(&self) -> usize {
+        (self.bounds.size.height / self.line_height).floor() as usize
+    }
+
+    pub fn num_columns(&self) -> usize {
+        (self.bounds.size.width / self.cell_width).floor() as usize
+    }
+}
+```
+</CodeGroup>
+
+### Text Selection
+
+Select text in the terminal using mouse or keyboard:
+- Click and drag to select text
+- Double-click to select word
+- Triple-click to select line
+
+### Copy and Paste
+
+**Keybindings:**
+- `Cmd+C` - Copy selection (or send interrupt if no selection)
+- `Cmd+V` - Paste from clipboard
+
+## Terminal Events
+
+The terminal emits various events for integration with the editor:
+
+<CodeGroup>
+```rust terminal/src/terminal.rs
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Event {
+    TitleChanged,
+    BreadcrumbsChanged,
+    CloseTerminal,
+    Bell,
+    Wakeup,
+    BlinkChanged(bool),
+    SelectionsChanged,
+    NewNavigationTarget(Option<MaybeNavigationTarget>),
+    Open(MaybeNavigationTarget),
+}
+```
+</CodeGroup>
+
+### Navigation Targets
+
+The terminal can detect and handle file paths and URLs:
+
+<CodeGroup>
+```rust terminal/src/terminal.rs
+/// A string inside terminal, potentially useful as a URI that can be opened.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum MaybeNavigationTarget {
+    /// HTTP, git, etc. string determined by the `URL_REGEX` regex.
+    Url(String),
+    /// File system path, absolute or relative, existing or not.
+    /// Might have line and column number(s) attached as `file.rs:1:23`
+    PathLike(PathLikeTarget),
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PathLikeTarget {
+    /// File system path, absolute or relative, existing or not.
+    /// Might have line and column number(s) attached as `file.rs:1:23`
+    pub maybe_path: String,
+    /// Current working directory of the terminal
+    pub terminal_dir: Option<PathBuf>,
+}
+```
+</CodeGroup>
+
+## Vi Mode
+
+The terminal supports vi-style navigation and selection:
+
+<CodeGroup>
+```rust terminal/src/terminal.rs
+enum InternalEvent {
+    // Vi mode events
+    ToggleViMode,
+    ViMotion(ViMotion),
+    MoveViCursorToAlacPoint(AlacPoint),
+    // ... other events
+}
+```
+</CodeGroup>
+
+**Features:**
+- Vi-style cursor movement
+- Text object selection
+- Search and navigation
+
+## Shell Integration
+
+Zed's terminal works with shell integration features:
+
+- **Working directory tracking** - Terminal tracks the current working directory
+- **Command execution** - Detects when commands start and finish
+- **Exit status** - Captures command exit codes
+
+## Terminal Settings
+
+<CodeGroup>
+```rust terminal/terminal_settings.rs
+pub struct TerminalSettings {
+    // Terminal configuration options
+    pub alternate_scroll: AlternateScroll,
+    pub cursor_shape: CursorShape,
+    // ... other settings
+}
+```
+</CodeGroup>
+
+Available cursor shapes:
+- Block
+- Beam
+- Underline
+
+## Task Integration
+
+Terminals can be spawned for running tasks:
+
+<CodeGroup>
+```rust task/src/task.rs
+/// Contains all information needed by Zed to spawn a new terminal tab for the given task.
+pub struct SpawnInTerminal {
+    pub id: TaskId,
+    pub full_label: String,
+    pub label: String,
+    pub command: Option<String>,
+    pub args: Vec<String>,
+    pub command_label: String,
+    pub cwd: Option<PathBuf>,
+    pub env: HashMap<String, String>,
+    pub use_new_terminal: bool,
+    pub allow_concurrent_runs: bool,
+    pub reveal: RevealStrategy,
+    pub reveal_target: RevealTarget,
+    pub hide: HideStrategy,
+    pub shell: Shell,
+    pub show_summary: bool,
+    pub show_command: bool,
+    pub show_rerun: bool,
+}
+```
+</CodeGroup>
+
+### Task Reveal Strategies
+
+<CodeGroup>
+```rust task/src/task_template.rs
+/// What to do with the terminal pane after the task is spawned
+pub enum RevealStrategy {
+    /// Always reveal the terminal
+    Always,
+    /// Only reveal if there's an error
+    Never,
+}
+
+/// Where to show task output
+pub enum RevealTarget {
+    /// Show in the dock
+    Dock,
+    /// Show in the center pane
+    Center,
+}
+
+/// What to do after the task completes
+pub enum HideStrategy {
+    /// Never hide
+    Never,
+    /// Hide on success
+    OnSuccess,
+    /// Always hide
+    Always,
+}
+```
+</CodeGroup>
+
+## Error Handling
+
+The terminal provides detailed error information:
+
+<CodeGroup>
+```rust terminal/src/terminal.rs
+pub struct TerminalError {
+    pub directory: Option<PathBuf>,
+    pub program: Option<String>,
+    pub args: Option<Vec<String>>,
+    pub title_override: Option<String>,
+    pub source: std::io::Error,
+}
+
+impl TerminalError {
+    pub fn fmt_directory(&self) -> String {
+        self.directory
+            .clone()
+            .map(|path| {
+                match path
+                    .into_os_string()
+                    .into_string()
+                    .map_err(|os_str| format!("<non-utf8 path> {}", os_str.to_string_lossy()))
+                {
+                    Ok(s) => s,
+                    Err(s) => s,
+                }
+            })
+            .unwrap_or_else(|| "<no directory>".to_string())
+    }
+}
+```
+</CodeGroup>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Tasks" icon="list-check" href="/features/tasks">
+    Task runner and build commands
+  </Card>
+  <Card title="Git Integration" icon="code-branch" href="/features/git">
+    Git operations and version control
+  </Card>
+</CardGroup>

@@ -1,0 +1,601 @@
+---
+title: Language Configuration
+description: Configure language-specific settings in Zed
+---
+
+Zed allows you to configure settings on a per-language basis, controlling everything from formatting to language server behavior. Language settings override global defaults.
+
+## Language Settings Structure
+
+Configure language-specific settings in your `settings.json`:
+
+```json
+{
+  "languages": {
+    "Python": {
+      "tab_size": 4,
+      "formatter": "language_server"
+    },
+    "JavaScript": {
+      "tab_size": 2,
+      "formatter": "prettier",
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true
+      }
+    }
+  }
+}
+```
+
+## Common Language Settings
+
+### Indentation
+
+```json
+{
+  "languages": {
+    "Rust": {
+      "tab_size": 4,
+      "hard_tabs": false
+    },
+    "Go": {
+      "tab_size": 8,
+      "hard_tabs": true
+    },
+    "YAML": {
+      "tab_size": 2,
+      "hard_tabs": false
+    }
+  }
+}
+```
+
+- `tab_size`: Number of spaces per tab (or tab character width)
+- `hard_tabs`: Use tab characters (`true`) vs spaces (`false`)
+
+### Line Wrapping
+
+```json
+{
+  "languages": {
+    "Markdown": {
+      "soft_wrap": "preferred_line_length",
+      "preferred_line_length": 80,
+      "show_wrap_guides": true,
+      "wrap_guides": [80, 100]
+    }
+  }
+}
+```
+
+- `soft_wrap`: `"none"`, `"editor_width"`, or `"preferred_line_length"`
+- `preferred_line_length`: Character count for wrapping
+- `show_wrap_guides`: Show vertical rulers
+- `wrap_guides`: Array of column positions for guides
+
+### Formatting
+
+```json
+{
+  "languages": {
+    "TypeScript": {
+      "format_on_save": "on",
+      "formatter": "prettier",
+      "prettier": {
+        "allowed": true,
+        "parser": "typescript",
+        "plugins": ["prettier-plugin-tailwindcss"]
+      }
+    }
+  }
+}
+```
+
+#### Format on Save Options
+
+- `"off"` - Don't format on save
+- `"on"` - Format using configured formatter
+- `"language_server"` - Use language server formatting
+- `"external"` - Use external command
+
+#### Formatter Options
+
+- `"auto"` - Automatically choose formatter
+- `"language_server"` - Use LSP formatting
+- `"prettier"` - Use Prettier (if available)
+- `"external"` - Use external command
+- `["formatter1", "formatter2"]` - Try formatters in order
+
+### Code Actions on Format
+
+Run code actions automatically when formatting:
+
+```json
+{
+  "languages": {
+    "TypeScript": {
+      "code_actions_on_format": {
+        "source.organizeImports": true,
+        "source.fixAll.eslint": true
+      }
+    },
+    "Rust": {
+      "code_actions_on_format": {
+        "source.organizeImports": false
+      }
+    }
+  }
+}
+```
+
+### Save Actions
+
+```json
+{
+  "languages": {
+    "Python": {
+      "remove_trailing_whitespace_on_save": true,
+      "ensure_final_newline_on_save": true
+    }
+  }
+}
+```
+
+## Language Servers
+
+### Enabling/Disabling
+
+```json
+{
+  "languages": {
+    "JavaScript": {
+      "enable_language_server": true
+    },
+    "Plain Text": {
+      "enable_language_server": false
+    }
+  }
+}
+```
+
+### Language Server Selection
+
+Control which language servers to use:
+
+```json
+{
+  "languages": {
+    "TypeScript": {
+      "language_servers": [
+        "typescript-language-server",
+        "...",  // Include all other registered servers
+        "!vtsls"  // Exclude specific server
+      ]
+    }
+  }
+}
+```
+
+Tokens:
+- `"..."` - Placeholder for all other available servers
+- `"!name"` - Exclude a specific server (prefix with `!`)
+
+### Language Server Configuration
+
+```json
+{
+  "lsp": {
+    "rust-analyzer": {
+      "initialization_options": {
+        "check": {
+          "command": "clippy"
+        },
+        "cargo": {
+          "allFeatures": true
+        }
+      }
+    },
+    "typescript-language-server": {
+      "initialization_options": {
+        "preferences": {
+          "includeInlayParameterNameHints": "all"
+        }
+      }
+    }
+  }
+}
+```
+
+## Semantic Tokens
+
+Control how LSP semantic tokens are used for highlighting:
+
+```json
+{
+  "languages": {
+    "TypeScript": {
+      "semantic_tokens": "enhanced"  // Options: "disabled", "basic", "enhanced"
+    }
+  }
+}
+```
+
+- `"disabled"` - Don't use semantic tokens
+- `"basic"` - Use basic semantic token types
+- `"enhanced"` - Use full semantic token capabilities
+
+## Document Features
+
+### Folding Ranges
+
+```json
+{
+  "languages": {
+    "Python": {
+      "document_folding_ranges": "language_server"  // Options: "language_server", "indentation", "treesitter"
+    }
+  }
+}
+```
+
+### Document Symbols
+
+```json
+{
+  "languages": {
+    "JavaScript": {
+      "document_symbols": "language_server"  // Options: "language_server", "treesitter"
+    }
+  }
+}
+```
+
+## Completions
+
+```json
+{
+  "languages": {
+    "Rust": {
+      "show_completions_on_input": true,
+      "show_completion_documentation": true,
+      "completions": {
+        "words": "buffer",  // Options: "off", "buffer", "workspace", "fallback"
+        "words_min_length": 3,
+        "lsp": true,
+        "lsp_fetch_timeout_ms": 5000,
+        "lsp_insert_mode": "replace_suffix"  // Options: "insert", "replace", "replace_suffix"
+      }
+    }
+  }
+}
+```
+
+## Inlay Hints
+
+```json
+{
+  "languages": {
+    "Rust": {
+      "inlay_hints": {
+        "enabled": true,
+        "show_type_hints": true,
+        "show_parameter_hints": true,
+        "show_other_hints": true,
+        "show_background": false,
+        "edit_debounce_ms": 700,
+        "scroll_debounce_ms": 50,
+        "toggle_on_modifiers_press": {
+          "alt": true,
+          "shift": false,
+          "control": false,
+          "platform": false
+        }
+      }
+    }
+  }
+}
+```
+
+## Edit Predictions (AI Completions)
+
+```json
+{
+  "languages": {
+    "Markdown": {
+      "show_edit_predictions": false
+    },
+    "Rust": {
+      "show_edit_predictions": true,
+      "edit_predictions_disabled_in": ["string", "comment"]
+    }
+  }
+}
+```
+
+## Bracket Colorization
+
+```json
+{
+  "languages": {
+    "TypeScript": {
+      "colorize_brackets": true
+    }
+  }
+}
+```
+
+## Prettier Configuration
+
+```json
+{
+  "languages": {
+    "JavaScript": {
+      "prettier": {
+        "allowed": true,
+        "parser": "babel",
+        "plugins": [],
+        "options": {
+          "semi": false,
+          "singleQuote": true,
+          "trailingComma": "es5"
+        }
+      }
+    }
+  }
+}
+```
+
+## Tasks
+
+Configure language-specific task behavior:
+
+```json
+{
+  "languages": {
+    "Rust": {
+      "tasks": {
+        "enabled": true,
+        "prefer_lsp": false,
+        "variables": {
+          "CARGO_TARGET": "release"
+        }
+      }
+    }
+  }
+}
+```
+
+## Debuggers
+
+Specify preferred debuggers for a language:
+
+```json
+{
+  "languages": {
+    "Python": {
+      "debuggers": ["debugpy", "ptvsd"]
+    },
+    "JavaScript": {
+      "debuggers": ["node"]
+    }
+  }
+}
+```
+
+## Language-Specific Features
+
+### Auto-closing
+
+```json
+{
+  "languages": {
+    "HTML": {
+      "use_autoclose": true,
+      "use_auto_surround": true,
+      "jsx_tag_auto_close": true
+    }
+  }
+}
+```
+
+### Auto-indent
+
+```json
+{
+  "languages": {
+    "Python": {
+      "auto_indent": true,
+      "auto_indent_on_paste": true
+    }
+  }
+}
+```
+
+### Comment Continuation
+
+```json
+{
+  "languages": {
+    "JavaScript": {
+      "extend_comment_on_newline": true
+    },
+    "Markdown": {
+      "extend_list_on_newline": true,
+      "indent_list_on_tab": true
+    }
+  }
+}
+```
+
+### Linked Edits
+
+```json
+{
+  "languages": {
+    "HTML": {
+      "linked_edits": true  // Edit matching HTML tags together
+    }
+  }
+}
+```
+
+## File Type Associations
+
+Associate file patterns with languages:
+
+```json
+{
+  "file_types": {
+    "Dockerfile": ["Dockerfile*", "*.dockerfile"],
+    "JSON": ["*.json", "*.jsonc", ".eslintrc"],
+    "TypeScript": ["*.ts", "*.tsx", "*.mts", "*.cts"],
+    "TOML": ["*.toml", "Cargo.lock"],
+    "Markdown": ["*.md", "*.mdx", "*.markdown"]
+  }
+}
+```
+
+Glob patterns are supported:
+- `*` - Matches any characters except `/`
+- `**` - Matches any characters including `/`
+- `?` - Matches a single character
+- `[abc]` - Matches any character in the set
+
+## Common Language Examples
+
+### Rust
+
+```json
+{
+  "languages": {
+    "Rust": {
+      "tab_size": 4,
+      "hard_tabs": false,
+      "format_on_save": "on",
+      "formatter": "language_server",
+      "inlay_hints": {
+        "enabled": true,
+        "show_type_hints": true,
+        "show_parameter_hints": false
+      }
+    }
+  },
+  "lsp": {
+    "rust-analyzer": {
+      "initialization_options": {
+        "check": {
+          "command": "clippy"
+        }
+      }
+    }
+  }
+}
+```
+
+### Python
+
+```json
+{
+  "languages": {
+    "Python": {
+      "tab_size": 4,
+      "hard_tabs": false,
+      "format_on_save": "on",
+      "formatter": "language_server",
+      "preferred_line_length": 88
+    }
+  },
+  "lsp": {
+    "pyright": {
+      "initialization_options": {
+        "python": {
+          "analysis": {
+            "typeCheckingMode": "basic"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### TypeScript/JavaScript
+
+```json
+{
+  "languages": {
+    "TypeScript": {
+      "tab_size": 2,
+      "hard_tabs": false,
+      "format_on_save": "on",
+      "formatter": "prettier",
+      "code_actions_on_format": {
+        "source.organizeImports": true,
+        "source.fixAll.eslint": true
+      }
+    },
+    "JavaScript": {
+      "tab_size": 2,
+      "format_on_save": "on",
+      "formatter": "prettier"
+    }
+  }
+}
+```
+
+### Go
+
+```json
+{
+  "languages": {
+    "Go": {
+      "tab_size": 8,
+      "hard_tabs": true,
+      "format_on_save": "on",
+      "formatter": "language_server",
+      "code_actions_on_format": {
+        "source.organizeImports": true
+      }
+    }
+  }
+}
+```
+
+### HTML/CSS
+
+```json
+{
+  "languages": {
+    "HTML": {
+      "tab_size": 2,
+      "formatter": "prettier",
+      "use_autoclose": true,
+      "linked_edits": true
+    },
+    "CSS": {
+      "tab_size": 2,
+      "formatter": "prettier"
+    }
+  }
+}
+```
+
+## EditorConfig Support
+
+Zed respects `.editorconfig` files for per-file settings. EditorConfig takes precedence over language settings for:
+
+- `indent_style` (hard_tabs)
+- `indent_size` (tab_size)
+- `max_line_length` (preferred_line_length)
+- `insert_final_newline` (ensure_final_newline_on_save)
+- `trim_trailing_whitespace` (remove_trailing_whitespace_on_save)
+
+## Viewing Language Defaults
+
+To see default settings for all languages:
+
+1. Open Command Palette
+2. Run "zed: open default settings"
+3. Search for specific language names
+
+Default language settings are defined in Zed's source code and can be inspected in `assets/settings/default.json`.

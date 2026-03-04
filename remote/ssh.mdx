@@ -1,0 +1,467 @@
+---
+title: SSH Remote Development
+description: Connect to remote servers via SSH and edit code with local UI performance
+---
+
+# SSH Remote Development
+
+SSH remote development allows you to connect to any server accessible via SSH and edit code as if it were local. Zed handles the connection, server setup, and file synchronization automatically.
+
+## Quick Start
+
+1. Install Zed version 0.159 or later
+2. Use `Cmd+Shift+O` (macOS) or `Ctrl+Shift+O` (Linux/Windows) to open "Remote Projects"
+3. Click "Connect New Server"
+4. Enter your SSH command: `ssh user@hostname`
+5. Complete any authentication prompts
+6. Choose a folder to open on the remote server
+
+## Connection Setup
+
+### Basic SSH Connection
+
+The simplest connection requires only a hostname:
+
+```sh
+ssh hostname
+```
+
+Zed will use your current username and default SSH settings.
+
+### SSH with User and Port
+
+Specify a different user or port:
+
+```sh
+ssh user@hostname -p 2222
+```
+
+### Using SSH Config
+
+Zed respects your `~/.ssh/config` file. If you have a host alias configured:
+
+```ssh-config
+Host myserver
+    HostName 192.168.1.10
+    User developer
+    Port 2222
+    IdentityFile ~/.ssh/work_key
+```
+
+You can connect using just:
+
+```sh
+ssh myserver
+```
+
+### Command Line Access
+
+Open a remote folder directly from your terminal:
+
+```sh
+zed ssh://user@hostname/path/to/folder
+```
+
+Or use a URL scheme for hotlinking:
+
+```
+zed://ssh/user@hostname:port/path/to/folder
+```
+
+## Configuration
+
+### Settings File Structure
+
+SSH connections are stored in your Zed settings file. Open settings with `Cmd+,` (macOS) or `Ctrl+,` (Linux/Windows):
+
+```json
+{
+  "ssh_connections": [
+    {
+      "host": "192.168.1.10",
+      "username": "developer",
+      "projects": [
+        { "paths": ["~/code/project"] }
+      ]
+    }
+  ]
+}
+```
+
+### Connection Options
+
+Available options for each SSH connection:
+
+```json
+{
+  "ssh_connections": [
+    {
+      "host": "192.168.1.10",
+      "username": "developer",
+      "port": 2222,
+      "nickname": "Dev Server",
+      "args": ["-i", "~/.ssh/work_key"],
+      "upload_binary_over_ssh": false,
+      "port_forwards": [
+        {
+          "local_port": 8080,
+          "remote_port": 3000
+        }
+      ],
+      "connection_timeout": 30,
+      "projects": [
+        { "paths": ["~/code/project"] }
+      ]
+    }
+  ]
+}
+```
+
+### Option Reference
+
+#### Required Options
+
+- **`host`**: Hostname or IP address of the remote server
+
+#### Optional Options
+
+- **`username`**: SSH username (defaults to your local username)
+- **`port`**: SSH port (defaults to 22)
+- **`nickname`**: Display name in the Zed UI
+- **`args`**: Additional SSH command-line arguments (array of strings)
+- **`upload_binary_over_ssh`**: Download server binary locally and upload via SSH (default: `false`)
+- **`connection_timeout`**: Connection timeout in seconds (default: 10)
+- **`port_forwards`**: Port forwarding configuration (see [Port Forwarding](#port-forwarding))
+- **`projects`**: List of project paths to display in Remote Projects dialog
+
+## SSH Command Arguments
+
+Zed supports most SSH command-line options. Pass them via the `args` array:
+
+### Identity File
+
+Use a specific SSH key:
+
+```json
+{
+  "args": ["-i", "~/.ssh/work_key"]
+}
+```
+
+### Jump Host / Bastion
+
+Connect through an intermediate host:
+
+```json
+{
+  "args": ["-J", "bastion.example.com"]
+}
+```
+
+### Custom SSH Config File
+
+Use an alternate SSH config:
+
+```json
+{
+  "args": ["-F", "/path/to/ssh_config"]
+}
+```
+
+### SSH Options
+
+Set specific SSH options:
+
+```json
+{
+  "args": [
+    "-o", "ServerAliveInterval=60",
+    "-o", "ServerAliveCountMax=3"
+  ]
+}
+```
+
+### Supported SSH Flags
+
+**Allowed options**: `-4`, `-6`, `-A`, `-a`, `-B`, `-b`, `-C`, `-c`, `-D`, `-F`, `-I`, `-i`, `-J`, `-K`, `-k`, `-L`, `-l`, `-m`, `-o`, `-p`, `-P`, `-R`, `-w`, `-X`, `-x`, `-Y`, `-y`
+
+**Note**: Flags like `-t`, `-T`, `-N`, and `-M` are managed by Zed and cannot be overridden.
+
+## Port Forwarding
+
+Forward ports from the remote server to your local machine:
+
+### Basic Port Forward
+
+```json
+{
+  "port_forwards": [
+    {
+      "local_port": 8080,
+      "remote_port": 3000
+    }
+  ]
+}
+```
+
+This forwards `localhost:8080` on your machine to port `3000` on the remote server.
+
+### Advanced Port Forwarding
+
+Bind to specific interfaces:
+
+```json
+{
+  "port_forwards": [
+    {
+      "local_host": "0.0.0.0",
+      "local_port": 8080,
+      "remote_host": "docker-host",
+      "remote_port": 3000
+    }
+  ]
+}
+```
+
+**Options**:
+
+- **`local_host`**: Local interface to bind (default: `127.0.0.1`)
+- **`local_port`**: Local port to listen on
+- **`remote_host`**: Remote host to connect to (default: `localhost` on remote)
+- **`remote_port`**: Remote port to forward
+
+### Multiple Forwards
+
+Forward multiple ports simultaneously:
+
+```json
+{
+  "port_forwards": [
+    { "local_port": 8080, "remote_port": 3000 },
+    { "local_port": 5432, "remote_port": 5432 },
+    { "local_port": 6379, "remote_port": 6379 }
+  ]
+}
+```
+
+## Server Binary Management
+
+### Automatic Download
+
+By default, Zed downloads the remote server binary from `https://zed.dev` directly on the remote server. The version must match your local Zed version.
+
+### Upload Over SSH
+
+For servers with restricted internet access, download the binary locally first:
+
+```json
+{
+  "upload_binary_over_ssh": true
+}
+```
+
+Zed will download the binary to your local machine and upload it via SSH.
+
+### Manual Binary Management
+
+Manage the server binary yourself:
+
+1. Download from [GitHub Releases](https://github.com/zed-industries/zed/releases)
+2. Or build from source: `cargo build -p remote_server --release`
+3. Upload to: `~/.zed_server/zed-remote-server-{CHANNEL}-{VERSION}` on the remote server
+
+Example path: `~/.zed_server/zed-remote-server-stable-0.217.3+stable.105.80433cb239e868271457ac376673a5f75bc4adb1`
+
+**Important**: The version string must match your local Zed version exactly.
+
+## Connection Management
+
+### SSH Control Master
+
+Zed uses SSH multiplexing via ControlMaster:
+
+- One master connection per project
+- All SSH sessions (terminals, tasks, file operations) reuse the master
+- Reduces connection overhead and improves performance
+
+**On Linux/macOS**, Zed creates a control socket in a temporary directory.
+
+**On Windows**, multiplexing is not available. Each operation creates a new SSH connection.
+
+### Reconnection
+
+The remote server runs as a daemon process. If your connection drops:
+
+1. Zed attempts to reconnect automatically (up to 3 attempts)
+2. The server daemon continues running on the remote machine
+3. Unsaved changes are preserved locally
+4. Upon reconnection, your session resumes
+
+### Server Daemon
+
+The remote server daemon:
+
+- Starts automatically on first connection
+- Persists across reconnections
+- Stops when idle for an extended period
+- Stores logs in `~/.zed_server/log` on the remote server
+
+## Authentication
+
+### SSH Keys (Recommended)
+
+Use key-based authentication for best security and convenience:
+
+1. Generate an SSH key pair: `ssh-keygen -t ed25519`
+2. Copy your public key to the server: `ssh-copy-id user@hostname`
+3. Connect in Zed without password prompts
+
+### Password Authentication
+
+Zed supports password authentication:
+
+- Prompts appear in the Zed UI during connection
+- Passwords are not stored in settings
+- For repeated connections, use key-based authentication instead
+
+**Note**: You can pass a password on the command line (`zed ssh://user:password@host/path`), but this is insecure and not recommended.
+
+### SSH Agent
+
+Zed respects your SSH agent configuration:
+
+- Keys loaded in `ssh-agent` are automatically used
+- Agent forwarding is supported via `-A` or SSH config
+
+## Platform-Specific Notes
+
+### Windows (Client)
+
+Zed on Windows supports SSH remoting:
+
+- Uses the `ssh.exe` on your PATH (usually from OpenSSH or Git for Windows)
+- Prompts for credentials using the system askpass dialog
+- ControlMaster multiplexing is not available on Windows
+
+**Troubleshooting**:
+
+- Ensure `ssh.exe` is on your PATH
+- Check that SSH agent (ssh-agent or Git SSH agent) is running
+- Use the graphical password prompt when it appears
+
+### Windows (Server)
+
+Windows remote servers are supported with some limitations:
+
+- Requires OpenSSH Server installed
+- PowerShell is detected and used for command execution
+- Some POSIX-specific features may not work
+
+### WSL Integration
+
+On Windows, you can connect to WSL distributions without SSH. See [Remote Development Overview](./overview#wsl-windows-subsystem-for-linux).
+
+## Proxy Configuration
+
+The remote server may need proxy configuration separate from your local machine.
+
+### Environment Variables
+
+Set proxy environment variables on the remote server (e.g., in `~/.bashrc`):
+
+```bash
+export http_proxy="http://proxy.example.com:8080"
+export https_proxy="http://proxy.example.com:8080"
+export no_proxy="localhost,127.0.0.1"
+```
+
+### Zed Settings
+
+Alternatively, configure the proxy in the remote server's Zed settings (`~/.config/zed/settings.json` on the server):
+
+```json
+{
+  "proxy": "http://proxy.example.com:8080"
+}
+```
+
+The remote server uses this proxy for:
+
+- Downloading language servers
+- AI model requests (if using remote AI features)
+- Extension downloads
+
+See the [proxy documentation](https://zed.dev/docs/reference/all-settings#network-proxy) for supported proxy types.
+
+## Troubleshooting
+
+### Connection Fails
+
+1. **Test SSH directly**: Run `ssh user@hostname` in your terminal
+2. **Check logs**: Use `Cmd+Shift+P` → "Open Log" to view connection details
+3. **Verify server requirements**: Ensure the remote platform is supported
+4. **Check firewall**: Confirm SSH port (default 22) is accessible
+
+### Authentication Issues
+
+- **Key rejected**: Verify your SSH key is added to `~/.ssh/authorized_keys` on the server
+- **Password not working**: Check for typos; consider using key-based authentication
+- **Agent issues**: Ensure `ssh-agent` is running and has your key loaded
+
+### Server Binary Problems
+
+- **Version mismatch**: Update Zed to the latest version or manually upload matching binary
+- **Download fails**: Use `"upload_binary_over_ssh": true` for restricted servers
+- **Permission denied**: Ensure `~/.zed_server` directory is writable
+
+### Performance Issues
+
+- **Slow file operations**: Check network latency; consider a closer server
+- **High CPU on server**: Large language servers may need more resources
+- **Frequent disconnects**: Adjust SSH keep-alive settings:
+
+```json
+{
+  "args": [
+    "-o", "ServerAliveInterval=60",
+    "-o", "ServerAliveCountMax=10"
+  ]
+}
+```
+
+### Remote Server Logs
+
+View server logs on the remote machine:
+
+```sh
+tail -f ~/.zed_server/log
+```
+
+## Best Practices
+
+### Security
+
+- Use SSH keys instead of passwords
+- Restrict SSH access with firewall rules
+- Use `~/.ssh/config` for complex connection requirements
+- Avoid committing SSH credentials to version control
+
+### Performance
+
+- Open specific project folders, not large directories like `/` or `~`
+- Use `.gitignore` to exclude large generated directories
+- Close unused remote projects to free resources
+
+### Workflow
+
+- Save files regularly to persist changes to the remote server
+- Use remote terminals for build and test commands
+- Configure port forwarding for local access to remote services
+- Store project-specific settings in `.zed/settings.json`
+
+## Next Steps
+
+- [Learn about dev containers](./dev-containers)
+- [Configure Zed tasks](https://zed.dev/docs/running-testing)
+- [Use the remote terminal](https://zed.dev/docs/terminal)
+- [Get help in Discord](https://zed.dev/community-links) (#remoting-feedback)

@@ -1,0 +1,278 @@
+---
+title: Opening Files and Projects
+description: How to use the Zed CLI to open files, directories, and projects with various workspace management options.
+---
+
+# Opening Files and Projects
+
+The Zed CLI provides flexible options for opening files and directories,
+controlling how they are added to workspaces, and managing multiple windows.
+
+## Basic File Opening
+
+Open a single file:
+
+```sh
+zed myfile.txt
+```
+
+Open multiple files:
+
+```sh
+zed file1.txt file2.txt file3.txt
+```
+
+## Opening Directories
+
+Open a directory as a workspace:
+
+```sh
+zed ~/projects/myproject
+```
+
+Open multiple directories:
+
+```sh
+zed ~/projects/project1 ~/projects/project2
+```
+
+Each directory opens in its own workspace unless you use workspace management
+flags.
+
+## Line and Column Positioning
+
+Open a file at a specific line:
+
+```sh
+zed myfile.txt:42
+```
+
+Open a file at a specific line and column:
+
+```sh
+zed myfile.txt:42:10
+```
+
+The line and column numbers are 1-based. This syntax is parsed using the
+`PathWithPosition` format and works with:
+
+- Absolute paths: `/home/user/file.txt:10:5`
+- Relative paths: `src/main.rs:42`
+- Paths that don't exist yet: `newfile.txt:1`
+
+When opening non-existent paths, Zed will canonicalize the existing portion of
+the path and append the non-existing part.
+
+## Workspace Management
+
+### New Window (`-n`, `--new`)
+
+Create a new workspace window, even if the paths are already open:
+
+```sh
+zed -n ~/projects/myproject
+```
+
+This is useful when you want to work on the same project in multiple windows
+with different file selections.
+
+### Add to Current Workspace (`-a`, `--add`)
+
+Add paths to the currently focused workspace:
+
+```sh
+zed -a newfile.txt
+zed -a ../other-project
+```
+
+When multiple workspace windows are open, files are added to the focused window.
+This is ideal for expanding your current workspace without opening new windows.
+
+### Reuse Window (`-r`, `--reuse`)
+
+Replace the current workspace with new paths:
+
+```sh
+zed -r ~/projects/different-project
+```
+
+This closes the current workspace and opens the new paths in the same window.
+
+## Flag Interaction
+
+The workspace management flags override each other:
+
+- `--new`, `--add`, and `--reuse` are mutually exclusive
+- The last specified flag takes precedence
+- Without any flag, Zed uses its default behavior (open in new window or reuse
+  based on settings)
+
+## Waiting for Closure (`-w`, `--wait`)
+
+Wait for all opened files to be closed before the CLI exits:
+
+```sh
+zed --wait commit-message.txt
+```
+
+Behavior:
+
+- For files: waits until all specified files are closed
+- For directories: waits until the created window is closed
+- Exit code reflects success of the editing session
+
+This is essential for integrating Zed with tools that expect the editor to
+block:
+
+```sh
+export EDITOR="zed --wait"
+git commit  # Opens Zed and waits for you to save and close
+```
+
+## Reading from Standard Input
+
+Read content from stdin:
+
+```sh
+ps aux | zed -
+cat myfile.txt | zed -
+echo "Quick note" | zed -
+```
+
+The `-` argument must be the only path argument. Zed creates a temporary file
+with the stdin content and opens it.
+
+### Anonymous File Descriptors
+
+On Linux, macOS, and FreeBSD, Zed supports reading from anonymous file
+descriptors:
+
+**Linux:**
+
+```sh
+zed /proc/self/fd/3 3< <(echo "data")
+```
+
+Zed detects `memfd:` anonymous files.
+
+**macOS and FreeBSD:**
+
+```sh
+zed /dev/fd/3 3< <(echo "data")
+```
+
+Zed detects FIFO and socket file types.
+
+## URL Opening
+
+Open URLs directly:
+
+```sh
+zed zed://settings
+zed https://github.com/zed-industries/zed
+zed file:///home/user/document.txt
+zed ssh://server/path/to/file
+```
+
+Supported URL schemes:
+
+- `zed://` - Zed-specific URLs
+- `http://` and `https://` - Web URLs
+- `file://` - Local file URLs
+- `ssh://` - SSH remote paths
+
+## Windows: WSL Integration
+
+On Windows, the CLI automatically handles paths from WSL distributions. When
+launching Zed from within WSL, paths are converted to `file://` URLs with the
+WSL path resolved.
+
+The `--wsl` flag is used internally and should not be set manually.
+
+## Custom User Data Directory
+
+Open files with a custom data directory:
+
+```sh
+zed --user-data-dir ~/.zed-custom myfile.txt
+```
+
+This affects where Zed stores:
+
+- Database
+- Extensions
+- Logs
+- Settings
+
+Default locations:
+
+- **macOS:** `~/Library/Application Support/Zed`
+- **Linux:** `$XDG_DATA_HOME/zed` (typically `~/.local/share/zed`)
+- **Windows:** `%LOCALAPPDATA%\Zed`
+
+## Foreground Mode
+
+Run Zed in the foreground, keeping the terminal attached:
+
+```sh
+zed --foreground myfile.txt
+```
+
+This is useful for:
+
+- Debugging startup issues
+- Viewing log output in real-time
+- Running Zed in a terminal-based workflow
+
+## Custom Zed Binary
+
+Specify a custom path to the Zed application or binary:
+
+```sh
+zed --zed /path/to/Zed.app myfile.txt
+```
+
+This allows you to:
+
+- Use a development build
+- Run multiple Zed versions
+- Use a custom installation location
+
+## Examples
+
+Edit a Git commit message:
+
+```sh
+export EDITOR="zed --wait"
+git commit
+```
+
+Open a project in a new window:
+
+```sh
+zed -n ~/projects/myproject
+```
+
+Add a file to the current workspace:
+
+```sh
+zed -a src/new_module.rs
+```
+
+Open a file at a specific location:
+
+```sh
+zed src/main.rs:42:10
+```
+
+Pipe command output to Zed:
+
+```sh
+curl https://example.com | zed -
+```
+
+## See Also
+
+- [CLI Overview](./overview.mdx) - Introduction and installation
+- [Diff Command](./diff.mdx) - Comparing files
+- [CLI Options](./options.mdx) - Complete reference for all flags

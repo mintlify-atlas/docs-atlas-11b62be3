@@ -1,0 +1,162 @@
+---
+title: AI Features Overview
+description: Comprehensive overview of Zed's AI-powered development features
+---
+
+Zed integrates powerful AI capabilities directly into your development workflow, offering intelligent code assistance, automated editing, and conversational programming support.
+
+## Key AI Features
+
+### Agent Panel
+
+The Agent Panel provides a conversational interface for AI-assisted development:
+
+- **Multi-turn conversations** with context awareness
+- **File and directory context** integration
+- **Terminal command execution** with AI assistance
+- **Code editing** with diff preview and review
+- **Thread history** for organizing conversations
+- **Multiple AI agents** including native Zed Agent and custom external agents
+
+### Inline Assistant
+
+The Inline Assistant brings AI directly into your editor:
+
+- **Code generation** from natural language prompts
+- **Code transformation** and refactoring
+- **Multi-selection support** for batch operations
+- **Streaming completions** with real-time preview
+- **Alternative suggestions** from multiple models
+- **Undo/redo** support for AI-generated changes
+
+### Terminal Assistant
+
+AI-powered terminal command assistance:
+
+- **Command generation** from natural language
+- **Error explanation** and debugging help
+- **Command history** integration
+- **Safe command execution** with confirmation prompts
+
+## Use Cases
+
+### Code Generation
+
+Generate code from natural language descriptions:
+
+```
+Select code region → Cmd+Enter → "Add error handling for this API call"
+```
+
+The AI will analyze your code context and generate appropriate error handling.
+
+### Code Review
+
+Use the Agent Panel to review changes:
+
+```
+@git:diff Review this branch diff for potential issues
+```
+
+### Refactoring
+
+Transform code structure with the Inline Assistant:
+
+```
+"Convert this class to use dependency injection"
+"Extract this logic into a separate function"
+"Optimize this database query"
+```
+
+### Documentation
+
+Generate documentation from code:
+
+```
+"Add JSDoc comments explaining this function's parameters and return value"
+```
+
+### Debugging
+
+Get help understanding and fixing issues:
+
+```
+@diagnostics Explain these TypeScript errors and suggest fixes
+```
+
+### Learning
+
+Ask questions about your codebase:
+
+```
+"How does the authentication flow work in this application?"
+"Explain the purpose of this configuration file"
+```
+
+## AI Providers
+
+Zed supports multiple AI providers out of the box:
+
+- **Anthropic** (Claude models)
+- **OpenAI** (GPT models)
+- **Google AI** (Gemini models)
+- **Zed Cloud** (Powered by various providers)
+- **Ollama** (Local models)
+- **Custom providers** (OpenAI-compatible APIs)
+
+See [AI Providers](/ai/providers) for detailed setup instructions.
+
+## Model Selection
+
+Configure different models for different tasks:
+
+```json
+{
+  "agent": {
+    "default_model": {
+      "provider": "anthropic",
+      "model": "claude-3-5-sonnet-20241022"
+    },
+    "inline_assistant_model": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    },
+    "commit_message_model": {
+      "provider": "zed.dev",
+      "model": "claude-3-5-sonnet-20241022"
+    }
+  }
+}
+```
+
+## Context Awareness
+
+Zed's AI features understand your development context:
+
+- **File contents** and structure
+- **Active selections** and cursor position
+- **Git repository** state and history
+- **Language server** information (types, definitions, diagnostics)
+- **Terminal** output and history
+- **Project structure** and dependencies
+
+## Privacy & Security
+
+- **API keys** are stored securely in your system keychain
+- **Code context** is only sent when explicitly requested
+- **Tool permissions** can be configured to control AI actions
+- **Local models** (via Ollama) keep everything on your machine
+
+## Getting Started
+
+1. **Enable AI features** in Settings → Agent
+2. **Configure a provider** in Settings → Language Models
+3. **Open the Agent Panel** with `Cmd+Shift+A` (macOS) or `Ctrl+Shift+A` (Linux/Windows)
+4. **Use Inline Assistant** by selecting code and pressing `Cmd+Enter`
+
+## Next Steps
+
+- [Agent Panel Guide](/ai/agent-panel) - Learn to use the conversational AI interface
+- [Inline Assistant](/ai/inline-assistant) - Master inline code generation
+- [Configuration](/ai/configuration) - Customize AI behavior and models
+- [Providers Setup](/ai/providers) - Connect your preferred AI providers

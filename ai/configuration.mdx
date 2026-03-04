@@ -1,0 +1,509 @@
+---
+title: AI Configuration
+description: Configure AI models, behavior, and permissions in Zed
+---
+
+Zed's AI features are highly configurable, allowing you to customize models, permissions, and behavior to match your workflow.
+
+## Settings Location
+
+AI settings are configured in your Zed settings file:
+
+1. Open settings: `Cmd+,` (macOS) or `Ctrl+,` (Linux/Windows)
+2. Navigate to the `agent` section
+3. Or edit `~/.config/zed/settings.json` directly
+
+## Basic Configuration
+
+### Enable/Disable AI Features
+
+```json
+{
+  "agent": {
+    "enabled": true,  // Master switch for all AI features
+    "button": true    // Show agent panel button in status bar
+  }
+}
+```
+
+Disabling AI features will:
+- Hide the agent panel button
+- Disable inline assistant
+- Remove AI-related menu items
+
+## Model Configuration
+
+### Default Model
+
+Set the primary model for all AI features:
+
+```json
+{
+  "agent": {
+    "default_model": {
+      "provider": "anthropic",
+      "model": "claude-3-5-sonnet-20241022"
+    }
+  }
+}
+```
+
+### Task-Specific Models
+
+Use different models for different tasks:
+
+```json
+{
+  "agent": {
+    "default_model": {
+      "provider": "anthropic",
+      "model": "claude-3-5-sonnet-20241022"
+    },
+    "inline_assistant_model": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    },
+    "commit_message_model": {
+      "provider": "zed.dev",
+      "model": "claude-3-5-haiku-20241022"
+    },
+    "thread_summary_model": {
+      "provider": "openai",
+      "model": "gpt-4o-mini"
+    }
+  }
+}
+```
+
+**Model types:**
+- `default_model` - Used for Agent Panel conversations
+- `inline_assistant_model` - Used for inline code generation
+- `commit_message_model` - Used for generating git commit messages
+- `thread_summary_model` - Used for summarizing conversation threads
+
+### Favorite Models
+
+Pin frequently used models to the top of the model selector:
+
+```json
+{
+  "agent": {
+    "favorite_models": [
+      {
+        "provider": "anthropic",
+        "model": "claude-3-5-sonnet-20241022"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-4o"
+      },
+      {
+        "provider": "ollama",
+        "model": "qwen2.5-coder:32b"
+      }
+    ]
+  }
+}
+```
+
+### Model Parameters
+
+Customize model behavior with parameters:
+
+```json
+{
+  "agent": {
+    "model_parameters": [
+      {
+        "provider": "anthropic",
+        "model": "claude-3-5-sonnet-20241022",
+        "temperature": 0.7
+      },
+      {
+        "provider": "openai",
+        "temperature": 0.8  // Applies to all OpenAI models
+      },
+      {
+        "model": "gpt-4o",
+        "temperature": 0.5  // Override for specific model
+      }
+    ]
+  }
+}
+```
+
+**Parameters cascade:** Settings are applied from most general to most specific. The last matching entry wins.
+
+### Extended Thinking
+
+Enable extended reasoning for complex tasks:
+
+```json
+{
+  "agent": {
+    "default_model": {
+      "provider": "anthropic",
+      "model": "claude-3-7-sonnet-20250219",
+      "enable_thinking": true,
+      "effort": "medium"  // Options: "low", "medium", "high"
+    }
+  }
+}
+```
+
+Thinking mode:
+- Model spends more time reasoning
+- Shows thinking process during generation
+- Better for complex, multi-step problems
+- Uses more tokens (costs more)
+
+## Tool Permissions
+
+Control what the AI can do in your workspace:
+
+### Global Default
+
+```json
+{
+  "agent": {
+    "tool_permissions": {
+      "default": "confirm"  // "allow", "confirm", or "deny"
+    }
+  }
+}
+```
+
+**Permission modes:**
+- `allow` - Execute without asking
+- `confirm` - Always prompt user (default)
+- `deny` - Never allow
+
+### Per-Tool Configuration
+
+```json
+{
+  "agent": {
+    "tool_permissions": {
+      "default": "confirm",
+      "tools": {
+        "edit_file": {
+          "default": "confirm"
+        },
+        "create_file": {
+          "default": "confirm"
+        },
+        "terminal": {
+          "default": "confirm",
+          "always_allow": [
+            {"pattern": "^cargo test"},
+            {"pattern": "^npm test"},
+            {"pattern": "^git status"}
+          ],
+          "always_deny": [
+            {"pattern": "rm -rf"},
+            {"pattern": "sudo", "case_sensitive": false}
+          ]
+        },
+        "fetch": {
+          "default": "allow",
+          "always_deny": [
+            {"pattern": "localhost"},
+            {"pattern": "127\\.0\\.0\\.1"}
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+**Pattern matching:**
+- `always_deny` takes precedence over everything
+- Then `always_confirm` is checked
+- Then `always_allow` is checked
+- Finally, the `default` mode applies
+
+**Regex rules:**
+- Patterns are case-insensitive by default
+- Set `"case_sensitive": true` for case-sensitive matching
+- Use standard regex syntax
+- Escape special characters: `\.` for `.`, `\\` for `\`
+
+### Built-in Security Rules
+
+Zed has hardcoded protections that cannot be overridden:
+
+```
+rm -rf /
+rm -rf ~
+rm -rf $HOME
+rm -rf .
+rm -rf ..
+```
+
+These commands are always blocked for safety.
+
+## Agent Profiles
+
+Create profiles for different workflows:
+
+```json
+{
+  "agent": {
+    "default_profile": "write",
+    "profiles": {
+      "write": {
+        "name": "Code Writer",
+        "tools": {
+          "edit_file": true,
+          "create_file": true,
+          "delete_path": false,
+          "terminal": true
+        },
+        "default_model": {
+          "provider": "anthropic",
+          "model": "claude-3-5-sonnet-20241022"
+        }
+      },
+      "review": {
+        "name": "Code Reviewer",
+        "tools": {
+          "edit_file": false,
+          "create_file": false,
+          "terminal": false,
+          "read_file": true
+        },
+        "default_model": {
+          "provider": "openai",
+          "model": "gpt-4o"
+        }
+      },
+      "debug": {
+        "name": "Debugger",
+        "tools": {
+          "terminal": true,
+          "read_file": true,
+          "edit_file": true
+        },
+        "default_model": {
+          "provider": "anthropic",
+          "model": "claude-3-7-sonnet-20250219",
+          "enable_thinking": true
+        }
+      }
+    }
+  }
+}
+```
+
+Switch profiles from the Agent Panel settings menu.
+
+## UI Configuration
+
+### Panel Position and Size
+
+```json
+{
+  "agent": {
+    "dock": "right",        // "left", "right", or "bottom"
+    "default_width": 800,   // pixels, for left/right dock
+    "default_height": 400   // pixels, for bottom dock
+  }
+}
+```
+
+### Message Editor
+
+```json
+{
+  "agent": {
+    "use_modifier_to_send": false,     // Require Cmd+Enter to send
+    "message_editor_min_lines": 4      // Minimum height of input
+  }
+}
+```
+
+### Display Options
+
+```json
+{
+  "agent": {
+    "expand_edit_card": true,          // Show full diff preview
+    "expand_terminal_card": true,      // Show full command output
+    "enable_feedback": true,           // Show thumbs up/down buttons
+    "show_turn_stats": false,          // Show timing and token stats
+    "single_file_review": true         // Show edits in source files too
+  }
+}
+```
+
+### Notifications
+
+```json
+{
+  "agent": {
+    "notify_when_agent_waiting": "primary_screen",  // "all_screens", "never"
+    "play_sound_when_agent_done": false
+  }
+}
+```
+
+## Advanced Settings
+
+### Default View
+
+Choose the starting view for the Agent Panel:
+
+```json
+{
+  "agent": {
+    "default_view": "thread"  // "thread" or "text_thread"
+  }
+}
+```
+
+### Inline Assistant Options
+
+```json
+{
+  "agent": {
+    "inline_assistant_use_streaming_tools": true,
+    "inline_alternatives": [
+      {"provider": "anthropic", "model": "claude-3-5-sonnet-20241022"},
+      {"provider": "openai", "model": "gpt-4o"},
+      {"provider": "ollama", "model": "qwen2.5-coder:32b"}
+    ]
+  }
+}
+```
+
+### Terminal Integration
+
+```json
+{
+  "agent": {
+    "cancel_generation_on_terminal_stop": true
+  }
+}
+```
+
+When true, clicking the stop button in a terminal tool card also cancels the AI generation.
+
+## Context Server Configuration
+
+Configure MCP (Model Context Protocol) context servers:
+
+```json
+{
+  "agent": {
+    "profiles": {
+      "write": {
+        "enable_all_context_servers": false,
+        "context_servers": {
+          "git": {
+            "tools": {
+              "git_log": true,
+              "git_diff": true
+            }
+          },
+          "filesystem": {
+            "tools": {
+              "read_file": true,
+              "write_file": true
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+## Complete Example
+
+A comprehensive configuration:
+
+```json
+{
+  "agent": {
+    "enabled": true,
+    "button": true,
+    "dock": "right",
+    "default_width": 800,
+    
+    "default_model": {
+      "provider": "anthropic",
+      "model": "claude-3-5-sonnet-20241022"
+    },
+    
+    "inline_assistant_model": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    },
+    
+    "favorite_models": [
+      {"provider": "anthropic", "model": "claude-3-5-sonnet-20241022"},
+      {"provider": "openai", "model": "gpt-4o"},
+      {"provider": "ollama", "model": "qwen2.5-coder:32b"}
+    ],
+    
+    "model_parameters": [
+      {
+        "provider": "anthropic",
+        "temperature": 0.7
+      }
+    ],
+    
+    "tool_permissions": {
+      "default": "confirm",
+      "tools": {
+        "terminal": {
+          "default": "confirm",
+          "always_allow": [
+            {"pattern": "^cargo (test|build|check)"},
+            {"pattern": "^npm (test|run)"},
+            {"pattern": "^git (status|log|diff)"}
+          ],
+          "always_deny": [
+            {"pattern": "rm -rf"},
+            {"pattern": "^sudo"}
+          ]
+        }
+      }
+    },
+    
+    "expand_edit_card": true,
+    "use_modifier_to_send": false,
+    "notify_when_agent_waiting": "primary_screen"
+  }
+}
+```
+
+## Best Practices
+
+1. **Start conservative** - Use `"confirm"` mode while learning the AI's behavior
+2. **Whitelist safe commands** - Add common commands to `always_allow` once you trust them
+3. **Profile per task** - Create separate profiles for coding vs reviewing vs debugging
+4. **Choose models wisely** - Faster models for simple tasks, powerful models for complex ones
+5. **Use local models** - Consider Ollama for privacy-sensitive work
+6. **Review tool permissions** - Regularly audit what the AI is allowed to do
+
+## Troubleshooting
+
+### Settings not taking effect
+
+- Save your settings file (`Cmd+S`)
+- Reload Zed: `Cmd+Shift+P` → "zed: reload"
+- Check for JSON syntax errors
+
+### Invalid model configuration
+
+- Verify the provider name matches exactly
+- Check that the model is available for your provider
+- Ensure API keys are configured in Settings → Language Models
+
+### Tool permissions not working
+
+- Test regex patterns in a regex tester
+- Remember patterns are case-insensitive by default
+- Check the order: `always_deny` > `always_confirm` > `always_allow` > `default`

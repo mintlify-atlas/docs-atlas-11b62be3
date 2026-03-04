@@ -1,0 +1,196 @@
+---
+title: Installing Extensions
+description: Browse, install, and manage extensions from the Zed Extension Gallery
+---
+
+# Installing Extensions
+
+Extensions add functionality to Zed, including languages, themes, debuggers, and AI tools. You can browse and install them from the Extension Gallery.
+
+## Opening the Extension Gallery
+
+Open the Extension Gallery by:
+
+- Using the command palette: `zed: extensions`
+- Menu: **Zed > Extensions**
+- Keyboard shortcut (if configured)
+
+The Extension Gallery shows:
+
+- **Installed**: Extensions you've already installed
+- **Available**: All published extensions in the registry
+- **Dev Extensions**: Locally installed development extensions
+
+## Installing Extensions
+
+To install an extension:
+
+1. Open the Extension Gallery
+2. Browse or search for the extension you want
+3. Click the **Install** button next to the extension
+4. Wait for the installation to complete
+
+Extensions are automatically enabled after installation. Some extensions may require Zed to restart or may download additional components (like language servers) on first use.
+
+## Managing Installed Extensions
+
+In the Extension Gallery, installed extensions show:
+
+- Current version number
+- **Update** button (if a newer version is available)
+- **Uninstall** button
+
+### Updating Extensions
+
+Extensions can be updated individually:
+
+1. Open the Extension Gallery
+2. Find the extension in the **Installed** tab
+3. Click **Update** if available
+
+### Uninstalling Extensions
+
+To remove an extension:
+
+1. Open the Extension Gallery
+2. Find the extension in the **Installed** tab
+3. Click **Uninstall**
+4. Confirm the uninstallation
+
+## Installation Location
+
+Extensions are stored in platform-specific directories:
+
+- **macOS**: `~/Library/Application Support/Zed/extensions`
+- **Linux**: `$XDG_DATA_HOME/zed/extensions` or `~/.local/share/zed/extensions`
+- **Windows**: `%LOCALAPPDATA%\Zed\extensions`
+
+The extensions directory contains two subdirectories:
+
+- `installed/`: Source code for each extension
+- `work/`: Files created by extensions (downloaded language servers, caches, etc.)
+
+## Auto-Installing Extensions
+
+You can automatically install extensions when Zed starts by configuring the `auto_install_extensions` setting.
+
+### Configuration
+
+Add extension IDs to your `settings.json`:
+
+```json
+{
+  "auto_install_extensions": {
+    "rust": true,
+    "python": true,
+    "toml": true,
+    "my-custom-theme": true
+  }
+}
+```
+
+Extensions listed with `true` will be:
+
+- Installed if not already present
+- Kept installed (won't be auto-removed)
+
+Extensions not listed will not be automatically managed.
+
+### Uninstalling Auto-Installed Extensions
+
+To automatically uninstall an extension, set its value to `false`:
+
+```json
+{
+  "auto_install_extensions": {
+    "old-extension": false
+  }
+}
+```
+
+The extension will be removed on next startup if it's currently installed.
+
+## Dev Extensions
+
+Developers can install local extensions for testing without publishing to the registry.
+
+### Installing a Dev Extension
+
+1. Open the Extension Gallery
+2. Click **Install Dev Extension**
+3. Select the directory containing your extension (must have `extension.toml`)
+
+Dev extensions:
+
+- Override published extensions with the same ID
+- Appear in the **Dev Extensions** section
+- Can be uninstalled like regular extensions
+- Are rebuilt automatically when files change (requires Rust toolchain)
+
+See [Developing Extensions](./developing.mdx) for details on creating extensions.
+
+## Extension Updates
+
+Extensions are updated through the Extension Gallery. Zed checks for updates:
+
+- On startup
+- Periodically while running
+- When you manually refresh the Extension Gallery
+
+You'll see an **Update** button when a newer version is available.
+
+## Extension Permissions
+
+Extensions run with restricted capabilities for security. The default permission set allows:
+
+- Downloading files from any host
+- Installing npm packages
+- Executing commands
+
+You can restrict these capabilities in your settings. See the [Extension Capabilities](https://github.com/zed-industries/zed/blob/main/docs/src/extensions/capabilities.md) documentation for details.
+
+### Restricting Capabilities
+
+To limit what extensions can do, configure `granted_extension_capabilities`:
+
+```json
+{
+  "granted_extension_capabilities": [
+    { "kind": "download_file", "host": "github.com", "path": ["**"] },
+    { "kind": "npm:install", "package": "*" },
+    { "kind": "process:exec", "command": "*", "args": ["**"] }
+  ]
+}
+```
+
+This example only allows downloads from GitHub.
+
+## Troubleshooting
+
+### Extension Won't Install
+
+- Check your internet connection
+- Look for error messages in the Extension Gallery
+- Check the Zed log: **Zed > View Logs** or `zed: open log`
+
+### Extension Installed But Not Working
+
+- Check if the extension needs to download additional components (watch the status bar)
+- Restart Zed
+- Check the extension's repository for known issues
+- Look for errors in the Zed log
+
+### Language Server Issues
+
+Many language extensions download language servers on first use:
+
+1. Open a file of that language type
+2. Watch the status bar for "Installing [language] language server..."
+3. Wait for the download to complete
+4. If it fails, check the Zed log for error details
+
+### Getting Help
+
+- Check the extension's GitHub repository for documentation and issues
+- Report issues to the extension maintainer
+- For Zed itself, visit [github.com/zed-industries/zed/issues](https://github.com/zed-industries/zed/issues)

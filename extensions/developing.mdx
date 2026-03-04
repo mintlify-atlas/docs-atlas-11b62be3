@@ -1,0 +1,429 @@
+---
+title: Developing Extensions
+description: Create Zed extensions with Rust and WebAssembly
+---
+
+# Developing Extensions
+
+Zed extensions are Git repositories written in Rust and compiled to WebAssembly. This guide covers creating, testing, and publishing extensions.
+
+## Prerequisites
+
+Before developing extensions, install:
+
+- **Rust via rustup**: [rust-lang.org/tools/install](https://www.rust-lang.org/tools/install)
+  - Must be installed via rustup (not Homebrew or other package managers)
+- **Git**: For version control and publishing
+
+## Creating an Extension
+
+### Project Structure
+
+Create a new directory for your extension:
+
+```sh
+mkdir my-extension
+cd my-extension
+git init
+```
+
+### Manifest File
+
+Create `extension.toml` with metadata:
+
+```toml
+id = "my-extension"
+name = "My Extension"
+version = "0.1.0"
+schema_version = 1
+authors = ["Your Name <you@example.com>"]
+description = "Description of what your extension does"
+repository = "https://github.com/username/my-extension"
+```
+
+**Important**: Theme extensions should suffix their ID with `-theme` (e.g., `my-theme-theme`).
+
+### Rust Package (Optional)
+
+For extensions with custom code, create `Cargo.toml`:
+
+```toml
+[package]
+name = "my-extension"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+zed_extension_api = "0.1.0"
+```
+
+Use the latest `zed_extension_api` version from [crates.io](https://crates.io/crates/zed_extension_api). Check [compatibility](https://github.com/zed-industries/zed/blob/main/crates/extension_api#compatible-zed-versions) with your target Zed versions.
+
+### Extension Code
+
+Create `src/lib.rs` and implement the `Extension` trait:
+
+```rust
+use zed_extension_api as zed;
+use zed::{LanguageServerId, Result};
+
+struct MyExtension {
+    // Extension state
+}
+
+impl zed::Extension for MyExtension {
+    fn new() -> Self {
+        Self {}
+    }
+
+    fn language_server_command(
+        &mut self,
+        language_server_id: &LanguageServerId,
+        worktree: &zed::Worktree,
+    ) -> Result<zed::Command> {
+        // Return command to start language server
+        Ok(zed::Command {
+            command: "my-language-server".to_string(),
+            args: vec!["--stdio".to_string()],
+            env: Default::default(),
+        })
+    }
+}
+
+zed::register_extension!(MyExtension);
+```
+
+## Extension Capabilities
+
+### Language Servers
+
+Define language servers in `extension.toml`:
+
+```toml
+[language_servers.mylang-lsp]
+name = "MyLang Language Server"
+language = "MyLang"
+```
+
+Implement the language server command in your extension:
+
+```rust
+fn language_server_command(
+    &mut self,
+    language_server_id: &LanguageServerId,
+    worktree: &zed::Worktree,
+) -> Result<zed::Command> {
+    // Check if binary exists locally
+    if let Some(path) = worktree.which("mylang-lsp") {
+        return Ok(zed::Command {
+            command: path,
+            args: vec!["--stdio".to_string()],
+            env: Default::default(),
+        });
+    }
+    
+    // Download language server if needed
+    let version_dir = self.install_language_server(language_server_id)?;
+    Ok(zed::Command {
+        command: format!("{}/mylang-lsp", version_dir),
+        args: vec!["--stdio".to_string()],
+        env: Default::default(),
+    })
+}
+```
+
+### Downloading Language Servers
+
+Use the extension API to download and install binaries:
+
+```rust
+use zed::DownloadedFileType;
+
+fn install_language_server(&mut self, id: &LanguageServerId) -> Result<String> {
+    zed::set_language_server_installation_status(
+        id,
+        &zed::LanguageServerInstallationStatus::Downloading,
+    );
+
+    // Get latest release from GitHub
+    let release = zed::latest_github_release(
+        "owner/repo",
+        zed::GithubReleaseOptions {
+            require_assets: true,
+            pre_release: false,
+        },
+    )?;
+
+    let (os, arch) = zed::current_platform();
+    let asset_name = format!(
+        "mylang-lsp-{}-{}.tar.gz",
+        match os {
+            zed::Os::Mac => "macos",
+            zed::Os::Linux => "linux",
+            zed::Os::Windows => "windows",
+        },
+        match arch {
+            zed::Architecture::Aarch64 => "arm64",
+            zed::Architecture::X8664 => "x86_64",
+            zed::Architecture::X86 => "x86",
+        }
+    );
+
+    let asset = release
+        .assets
+        .iter()
+        .find(|a| a.name == asset_name)
+        .ok_or("Asset not found")?;
+
+    let version_dir = format!("mylang-lsp-{}", release.version);
+    zed::download_file(
+        &asset.download_url,
+        &version_dir,
+        DownloadedFileType::GzipTar,
+    )?;
+
+    zed::make_file_executable(&format!("{}/mylang-lsp", version_dir))?;
+    
+    zed::set_language_server_installation_status(
+        id,
+        &zed::LanguageServerInstallationStatus::None,
+    );
+
+    Ok(version_dir)
+}
+```
+
+### Tree-sitter Grammars
+
+Register Tree-sitter grammars in `extension.toml`:
+
+```toml
+[grammars.mylang]
+repository = "https://github.com/username/tree-sitter-mylang"
+commit = "abc123def456..."  # Full commit SHA
+```
+
+For local development, use a `file://` URL:
+
+```toml
+[grammars.mylang]
+repository = "file:///path/to/tree-sitter-mylang"
+commit = "HEAD"
+```
+
+### Slash Commands
+
+Define slash commands in `extension.toml`:
+
+```toml
+[slash_commands.echo]
+description = "Echoes the provided input"
+requires_argument = true
+```
+
+Implement the command handlers:
+
+```rust
+use zed::{SlashCommand, SlashCommandOutput, SlashCommandOutputSection};
+
+fn run_slash_command(
+    &self,
+    command: SlashCommand,
+    args: Vec<String>,
+    worktree: Option<&zed::Worktree>,
+) -> Result<SlashCommandOutput, String> {
+    match command.name.as_str() {
+        "echo" => {
+            let text = args.join(" ");
+            Ok(SlashCommandOutput {
+                sections: vec![SlashCommandOutputSection {
+                    range: (0..text.len()).into(),
+                    label: "Echo".to_string(),
+                }],
+                text,
+            })
+        }
+        _ => Err(format!("Unknown command: {}", command.name)),
+    }
+}
+```
+
+### Capabilities and Permissions
+
+Some operations require explicit capabilities in `extension.toml`:
+
+```toml
+[[capabilities]]
+kind = "process:exec"
+command = "node"
+args = ["**"]
+
+[[capabilities]]
+kind = "process:exec"
+command = "npm"
+args = ["install", "**"]
+```
+
+See the [test-extension](https://github.com/zed-industries/zed/blob/main/extensions/test-extension/extension.toml) for examples.
+
+## Testing Extensions Locally
+
+### Install as Dev Extension
+
+1. Open Zed
+2. Open the Extension Gallery
+3. Click **Install Dev Extension**
+4. Select your extension directory
+
+Dev extensions:
+- Override published extensions with the same ID
+- Rebuild automatically when you change files
+- Show "Overridden by dev extension" in the gallery
+
+### Debugging
+
+View extension output:
+
+1. **Zed Log**: Open with `zed: open log` or **Zed > View Logs**
+2. **Console Output**: Launch Zed from terminal with `zed --foreground` to see `println!` and `dbg!` output
+
+### Troubleshooting
+
+Common issues:
+
+- **Extension won't build**: Ensure Rust is installed via rustup
+- **Language server won't start**: Check file permissions with `ls -l` in extension's work directory
+- **Changes not reflected**: Uninstall and reinstall the dev extension
+- **WASM build errors**: Check `zed_extension_api` version compatibility
+
+## Publishing Extensions
+
+Extensions are published via pull request to [zed-industries/extensions](https://github.com/zed-industries/extensions).
+
+### License Requirements
+
+As of October 1st, 2025, extensions must include one of these licenses:
+
+- Apache 2.0
+- BSD 2-Clause
+- BSD 3-Clause
+- GNU GPLv3
+- GNU LGPLv3
+- MIT
+- zlib
+
+Add a `LICENSE` file to your repository root. See [license validation](https://github.com/zed-industries/extensions/blob/main/src/lib/license.js) for details.
+
+### Publishing Steps
+
+1. **Fork the extensions repository**
+   - Fork [zed-industries/extensions](https://github.com/zed-industries/extensions) to your personal GitHub account (not an organization)
+
+2. **Clone and prepare**
+   ```sh
+   git clone https://github.com/your-username/extensions
+   cd extensions
+   git submodule init
+   git submodule update
+   ```
+
+3. **Add your extension as a submodule**
+   ```sh
+   git submodule add https://github.com/your-username/my-extension.git extensions/my-extension
+   ```
+   
+   **Important**: Use HTTPS URLs, not SSH (`git@github.com`).
+
+4. **Update `extensions.toml`**
+   Add an entry for your extension:
+   ```toml
+   [my-extension]
+   submodule = "extensions/my-extension"
+   version = "0.1.0"
+   ```
+   
+   If your extension is in a subdirectory, add a `path` field:
+   ```toml
+   [my-extension]
+   submodule = "extensions/my-extension-repo"
+   path = "extension"
+   version = "0.1.0"
+   ```
+
+5. **Sort extensions**
+   ```sh
+   pnpm sort-extensions
+   ```
+
+6. **Create a pull request**
+   - Commit your changes
+   - Push to your fork
+   - Open a PR to `zed-industries/extensions`
+
+Once merged, your extension will be built and published to the registry within a few minutes.
+
+**Naming Guidelines**:
+- Don't include "zed" or "Zed" in the extension ID or name
+- Theme extensions should end with `-theme`
+
+### Updating Extensions
+
+To publish an update:
+
+1. Update the submodule to the new version:
+   ```sh
+   cd extensions
+   git submodule update --remote extensions/my-extension
+   ```
+
+2. Update the version in `extensions.toml` to match `extension.toml`
+
+3. Run `pnpm sort-extensions`
+
+4. Commit and create a pull request
+
+You can automate this with the [community GitHub Action](https://github.com/huacnlee/zed-extension-action).
+
+## API Reference
+
+The [`zed_extension_api`](https://docs.rs/zed_extension_api/latest/zed_extension_api/) crate provides:
+
+### Core Types
+
+- `Extension` trait: Main extension interface
+- `Command`: Command to execute
+- `Worktree`: Project workspace
+- `LanguageServerId`: Language server identifier
+
+### Helper Functions
+
+- `download_file`: Download and extract files
+- `latest_github_release`: Get latest GitHub release
+- `npm_install_package`: Install npm packages
+- `current_platform`: Get OS and architecture
+- `set_language_server_installation_status`: Update UI status
+
+### Resources
+
+- [API Documentation](https://docs.rs/zed_extension_api/latest/zed_extension_api/)
+- [Example Extensions](https://github.com/zed-industries/zed/tree/main/extensions)
+- [Extension Registry](https://github.com/zed-industries/extensions)
+- [Extension Capabilities](https://github.com/zed-industries/zed/blob/main/docs/src/extensions/capabilities.md)
+
+## Examples
+
+The Zed repository includes example extensions:
+
+- **[test-extension](https://github.com/zed-industries/zed/tree/main/extensions/test-extension)**: Language server installation, GitHub releases
+- **[html](https://github.com/zed-industries/zed/tree/main/extensions/html)**: npm package installation
+- **[slash-commands-example](https://github.com/zed-industries/zed/tree/main/extensions/slash-commands-example)**: Custom slash commands
+- **[glsl](https://github.com/zed-industries/zed/tree/main/extensions/glsl)**: Grammar-only extension
+
+## Next Steps
+
+- [Language Extensions](./language-extensions.mdx): Add programming language support
+- [Theme Extensions](./theme-extensions.mdx): Create custom themes
+- [Extension Capabilities](https://github.com/zed-industries/zed/blob/main/docs/src/extensions/capabilities.md): Security and permissions

@@ -1,0 +1,401 @@
+---
+title: Navigation
+description: Navigate your codebase efficiently with file finder, symbol search, go-to-definition, and more
+---
+
+## Overview
+
+Zed provides powerful navigation features to help you quickly move around your codebase, including fuzzy file finding, project-wide symbol search, and language server-powered code navigation.
+
+## File Finder
+
+The file finder allows you to quickly open files using fuzzy matching.
+
+### Opening the File Finder
+
+<CodeGroup>
+```rust file_finder/src/file_finder.rs
+pub struct FileFinder {
+    picker: Entity<Picker<FileFinderDelegate>>,
+    picker_focus_handle: FocusHandle,
+    init_modifiers: Option<Modifiers>,
+}
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+P` - Toggle file finder
+- `Cmd+T` - Toggle project symbols (different from file finder)
+
+### File Finder Features
+
+The file finder supports:
+- **Fuzzy matching** - Type partial filenames to find files
+- **Recent files** - Access recently opened files
+- **Path filtering** - Search by directory structure
+- **Split pane support** - Open files in different panes
+
+<CodeGroup>
+```rust file_finder/src/file_finder.rs
+actions!(
+    file_finder,
+    [
+        /// Selects the previous item in the file finder.
+        SelectPrevious,
+        /// Toggles the file filter menu.
+        ToggleFilterMenu,
+        /// Toggles the split direction menu.
+        ToggleSplitMenu
+    ]
+);
+```
+</CodeGroup>
+
+## Symbol Search
+
+### Project Symbols
+
+Search for symbols (functions, classes, variables) across your entire project.
+
+<CodeGroup>
+```rust project_symbols/src/project_symbols.rs
+pub struct ProjectSymbolsDelegate {
+    workspace: WeakEntity<Workspace>,
+    project: Entity<Project>,
+    selected_match_index: usize,
+    symbols: Vec<Symbol>,
+    visible_match_candidates: Vec<StringMatchCandidate>,
+    external_match_candidates: Vec<StringMatchCandidate>,
+    show_worktree_root_name: bool,
+    matches: Vec<StringMatch>,
+}
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+T` - Toggle project symbols
+
+**Features:**
+- Fuzzy matching on symbol names
+- Support for rust-analyzer's path-based syntax (`module::function`)
+- Shows symbol location and type
+- Jump to symbol definition
+
+### File Outline
+
+View and navigate symbols within the current file.
+
+**Keybindings:**
+- `Cmd+Shift+O` - Toggle outline
+
+## Go-to Definition
+
+Navigate to symbol definitions using language server integration.
+
+### Definition Navigation
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Goes to the definition of the symbol at cursor.
+GoToDefinition,
+/// Goes to definition in a split pane.
+GoToDefinitionSplit,
+/// Goes to the declaration of the symbol at cursor.
+GoToDeclaration,
+/// Goes to declaration in a split pane.
+GoToDeclarationSplit,
+/// Goes to the type definition of the symbol at cursor.
+GoToTypeDefinition,
+/// Goes to type definition in a split pane.
+GoToTypeDefinitionSplit,
+/// Goes to the implementation of the symbol at cursor.
+GoToImplementation,
+/// Goes to implementation in a split pane.
+GoToImplementationSplit,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `F12` - Go to definition
+- `Alt+F12` - Go to definition (split pane)
+- `Cmd+F12` - Go to type definition
+- `Alt+Cmd+F12` - Go to type definition (split)
+- `Shift+F12` - Go to implementation
+- `Ctrl+F12` - Go to declaration
+- `Alt+Ctrl+F12` - Go to declaration (split)
+
+### Find References
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Finds all references to the symbol at cursor.
+pub struct FindAllReferences {
+    pub always_open_multibuffer: bool,
+}
+
+impl Default for FindAllReferences {
+    fn default() -> Self {
+        Self {
+            always_open_multibuffer: true,
+        }
+    }
+}
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Alt+Shift+F12` - Find all references
+
+### Parent Module Navigation
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Goes to the parent module of the current file.
+GoToParentModule,
+```
+</CodeGroup>
+
+## Document Navigation
+
+### Bracket Matching
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Moves cursor to the enclosing bracket.
+MoveToEnclosingBracket,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+|` - Move to enclosing bracket
+- `Ctrl+M` - Move to enclosing bracket (JetBrains style)
+
+### Paragraph Navigation
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Moves cursor to the end of the paragraph.
+MoveToEndOfParagraph,
+/// Moves cursor to the start of the paragraph.
+MoveToStartOfParagraph,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Ctrl+Up` - Move to start of paragraph
+- `Ctrl+Down` - Move to end of paragraph
+
+### Document Highlights
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Goes to the next document highlight.
+GoToNextDocumentHighlight,
+/// Goes to the previous document highlight.
+GoToPreviousDocumentHighlight,
+```
+</CodeGroup>
+
+### Reference Navigation
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Goes to the next reference to the symbol under the cursor.
+GoToNextReference,
+/// Goes to the previous reference to the symbol under the cursor.
+GoToPreviousReference,
+```
+</CodeGroup>
+
+## Diagnostics Navigation
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Goes to the next diagnostic in the file.
+pub struct GoToDiagnostic {
+    pub severity: GoToDiagnosticSeverityFilter,
+}
+
+/// Goes to the previous diagnostic in the file.
+pub struct GoToPreviousDiagnostic {
+    pub severity: GoToDiagnosticSeverityFilter,
+}
+```
+</CodeGroup>
+
+**Keybindings:**
+- `F8` - Go to next diagnostic
+- `Shift+F8` - Go to previous diagnostic
+- `Cmd+Shift+M` - Deploy diagnostics panel
+
+## Change Navigation
+
+### Git Changes
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Goes to the next change in the file.
+GoToNextChange,
+/// Goes to the previous change in the file.
+GoToPreviousChange,
+/// Goes to the next diff hunk.
+GoToHunk,
+/// Goes to the previous diff hunk.
+GoToPreviousHunk,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+Shift+Backspace` - Go to previous change
+- `Cmd+Shift+Alt+Backspace` - Go to next change
+
+## Go to Line
+
+<CodeGroup>
+```rust editor/src/actions.rs
+actions!(
+    go_to_line,
+    [
+        /// Toggles the go to line dialog.
+        #[action(name = "Toggle")]
+        ToggleGoToLine
+    ]
+);
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Ctrl+G` - Toggle go to line dialog
+
+## Pane Navigation
+
+Navigate between different panes and editor tabs.
+
+**Keybindings:**
+- `Cmd+1` through `Cmd+9` - Activate pane 1-9
+- `Cmd+K Cmd+Left` - Activate pane left
+- `Cmd+K Cmd+Right` - Activate pane right
+- `Cmd+K Cmd+Up` - Activate pane up
+- `Cmd+K Cmd+Down` - Activate pane down
+- `Alt+Cmd+Left` / `Cmd+{` - Previous tab
+- `Alt+Cmd+Right` / `Cmd+}` - Next tab
+- `Ctrl+Tab` - Tab switcher
+- `Ctrl+Shift+Tab` - Tab switcher (reverse)
+
+## Scrolling
+
+### Cursor-Centered Scrolling
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Scrolls the cursor to the bottom of the viewport.
+ScrollCursorBottom,
+/// Scrolls the cursor to the center of the viewport.
+ScrollCursorCenter,
+/// Cycles cursor position between center, top, and bottom.
+ScrollCursorCenterTopBottom,
+/// Scrolls the cursor to the top of the viewport.
+ScrollCursorTop,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Ctrl+L` - Scroll cursor center
+
+### Page Scrolling
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Scrolls down by half a page.
+HalfPageDown,
+/// Scrolls up by half a page.
+HalfPageUp,
+/// Scrolls down by one page.
+PageDown,
+/// Scrolls up by one page.
+PageUp,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Ctrl+V` - Page down (center cursor)
+- `Ctrl+Shift+V` - Page up (center cursor)
+- `PageDown` - Move page down
+- `PageUp` - Move page up
+
+## Excerpt Navigation
+
+For multi-buffer views, navigate between excerpts.
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Moves cursor to the start of the current excerpt.
+MoveToStartOfExcerpt,
+/// Moves cursor to the start of the next excerpt.
+MoveToStartOfNextExcerpt,
+/// Moves cursor to the end of the current excerpt.
+MoveToEndOfExcerpt,
+/// Moves cursor to the end of the previous excerpt.
+MoveToEndOfPreviousExcerpt,
+```
+</CodeGroup>
+
+**Keybindings (in multibuffer mode):**
+- `Cmd+Up` - Move to start of excerpt
+- `Cmd+Down` - Move to start of next excerpt
+- `Cmd+Shift+Up` - Select to start of excerpt
+- `Cmd+Shift+Down` - Select to start of next excerpt
+
+## Hover Information
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Shows hover information for the symbol at cursor.
+Hover,
+/// Shows git blame information for the current line.
+BlameHover,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+K Cmd+I` - Show hover info
+- `Cmd+K Cmd+B` - Show blame hover
+
+## Opening Files
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Opens the file whose name is selected in the editor.
+OpenSelectedFilename,
+/// Opens all selections in a multibuffer.
+OpenSelectionsInMultibuffer,
+/// Opens the URL at cursor position.
+OpenUrl,
+/// Opens excerpts from the current file.
+OpenExcerpts,
+/// Opens excerpts in a split pane.
+OpenExcerptsSplit,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Alt+Enter` - Open selections in multibuffer
+
+## Navigation History
+
+Zed maintains navigation history for easy backward/forward movement:
+
+**Keybindings:**
+- `Ctrl+-` - Go back
+- `Ctrl+_` - Go forward
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Editing" icon="pen" href="/features/editing">
+    Code completion, multi-cursor, and text transformations
+  </Card>
+  <Card title="Git Integration" icon="code-branch" href="/features/git">
+    Git status, diff, blame, and commit operations
+  </Card>
+</CardGroup>

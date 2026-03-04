@@ -1,0 +1,223 @@
+---
+title: Diff Command
+description: How to use the Zed CLI to compare files and directories using the --diff flag.
+---
+
+# Diff Command
+
+The `--diff` flag opens a diff view comparing two files or directories. This is
+useful for reviewing changes, comparing versions, or exploring differences
+between configurations.
+
+## Basic File Diff
+
+Compare two files:
+
+```sh
+zed --diff old-file.txt new-file.txt
+```
+
+This opens a split view with:
+
+- Left pane: `old-file.txt` (OLD_PATH)
+- Right pane: `new-file.txt` (NEW_PATH)
+
+## Multiple Diffs
+
+Compare multiple pairs of files in a single session:
+
+```sh
+zed --diff file1.txt file2.txt --diff file3.txt file4.txt
+```
+
+You can specify `--diff` multiple times. Each pair opens as a separate diff
+view.
+
+## Directory Diff
+
+Compare two directories:
+
+```sh
+zed --diff old-version/ new-version/
+```
+
+When both paths are directories, Zed:
+
+1. Recursively walks both directories
+2. Collects all files
+3. Matches files by relative path
+4. Shows all changed files in a single multi-diff view
+
+### Directory Diff Behavior
+
+**Files present in both directories:**
+
+- Displayed as a standard diff
+
+**Files only in the left directory (deleted):**
+
+- Left pane: original file
+- Right pane: empty stub file
+
+**Files only in the right directory (added):**
+
+- Left pane: empty stub file
+- Right pane: new file
+
+Empty stub files are created in temporary directories to represent missing
+files. These temporary files persist until system cleanup (typically on reboot)
+to ensure Zed can access them even after the CLI exits.
+
+## Argument Format
+
+The `--diff` flag accepts exactly two arguments:
+
+```sh
+zed --diff <OLD_PATH> <NEW_PATH>
+```
+
+- **OLD_PATH**: The original or "before" file/directory
+- **NEW_PATH**: The modified or "after" file/directory
+
+Each path can be:
+
+- An absolute path: `/home/user/file.txt`
+- A relative path: `src/main.rs`
+- A non-existent path (Zed will handle it gracefully)
+
+## Path Positioning
+
+Diff paths support line and column positioning:
+
+```sh
+zed --diff old.txt:10 new.txt:15
+```
+
+This opens both files with the cursor positioned at the specified lines.
+
+## Combining with Other Options
+
+### Wait for Closure
+
+Wait until the diff view is closed:
+
+```sh
+zed --diff old.txt new.txt --wait
+```
+
+Useful in scripts that need to pause until the review is complete.
+
+### New Window
+
+Open the diff in a new window:
+
+```sh
+zed --diff old.txt new.txt --new
+```
+
+### Add to Current Workspace
+
+Add the diff to the currently focused workspace:
+
+```sh
+zed --diff old.txt new.txt --add
+```
+
+## Workspace Context for Diffs
+
+When only diff paths are provided (no regular file/directory paths), Zed
+automatically adds the current working directory to the workspace. This ensures:
+
+- The workspace opens with proper context
+- File tree navigation is available
+- Project-specific settings apply
+
+Example:
+
+```sh
+cd ~/projects/myproject
+zed --diff src/old.rs src/new.rs
+```
+
+This opens the diff along with the `~/projects/myproject` workspace.
+
+## Implementation Details
+
+### Temporary Files
+
+When comparing directories with files present in only one directory, Zed creates
+empty stub files in a temporary directory. These files:
+
+- Are created in the system temp directory
+- Use the same relative path structure as the original
+- Are kept (not auto-deleted) to prevent premature cleanup
+- Are cleaned up by the OS on system reboot
+
+This approach prevents issues when the CLI exits before Zed has finished reading
+the files (e.g., when communicating with an already-running Zed instance via
+IPC).
+
+### Path Canonicalization
+
+Diff paths are canonicalized using the same logic as regular paths:
+
+- Existing paths are fully canonicalized
+- Non-existing paths have their existing portion canonicalized
+- The result is always an absolute path
+
+This ensures consistent path handling across different operating systems and
+working directories.
+
+### Multi-Diff Mode
+
+When any diff path is a directory, Zed enters "multi-diff mode" which:
+
+- Processes all file pairs at once
+- Uses a unified diff view for all changes
+- Groups related changes together
+
+This mode is enabled automatically and cannot be disabled.
+
+## Examples
+
+### Compare Files Before Committing
+
+```sh
+zed --diff file.txt.backup file.txt
+```
+
+### Review Changes in Two Project Versions
+
+```sh
+zed --diff ~/projects/myapp-v1/ ~/projects/myapp-v2/
+```
+
+### Compare Multiple Configuration Files
+
+```sh
+zed --diff old-config.json new-config.json \
+    --diff old-schema.json new-schema.json
+```
+
+### Diff and Wait for Review
+
+```sh
+#!/bin/bash
+zed --diff before.rs after.rs --wait
+if [ $? -eq 0 ]; then
+  echo "Review complete"
+fi
+```
+
+### Compare with Git Versions
+
+```sh
+git show HEAD:src/main.rs > /tmp/old.rs
+zed --diff /tmp/old.rs src/main.rs
+```
+
+## See Also
+
+- [CLI Overview](./overview.mdx) - Introduction and basic usage
+- [Open Command](./open.mdx) - Opening files and projects
+- [CLI Options](./options.mdx) - Complete reference for all flags

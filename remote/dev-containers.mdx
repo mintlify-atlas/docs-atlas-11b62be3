@@ -1,0 +1,591 @@
+---
+title: Dev Containers
+description: Develop inside Docker containers with pre-configured development environments
+---
+
+# Dev Containers
+
+Dev containers allow you to develop inside Docker or Podman containers with pre-configured development environments. Zed automatically detects dev container configurations and can connect to running containers.
+
+## Overview
+
+Dev containers provide:
+
+- **Consistent environments** across team members
+- **Isolated dependencies** without affecting your host system
+- **Pre-configured toolchains** specific to each project
+- **Reproducible builds** with versioned container images
+
+Zed supports the dev container specification used by VS Code and other editors, making it easy to share configurations across tools.
+
+## Quick Start
+
+1. Create a `.devcontainer` folder or `.devcontainer.json` file in your project
+2. Define your container configuration (see [Configuration](#configuration))
+3. Zed will prompt you to open the project in a container when it detects the configuration
+4. Alternatively, use the "Open Dev Container" command to manually connect
+
+## Configuration
+
+### Basic Configuration
+
+Create `.devcontainer/devcontainer.json` in your project:
+
+```json
+{
+  "name": "My Dev Environment",
+  "image": "mcr.microsoft.com/devcontainers/rust:latest",
+  "customizations": {
+    "zed": {
+      "extensions": ["rust"]
+    }
+  }
+}
+```
+
+### Using a Dockerfile
+
+Build a custom image from a Dockerfile:
+
+```json
+{
+  "name": "Custom Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/workspace"
+}
+```
+
+Corresponding `Dockerfile`:
+
+```dockerfile
+FROM ubuntu:22.04
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd -m -s /bin/bash developer
+USER developer
+WORKDIR /workspace
+```
+
+### Docker Compose
+
+Use Docker Compose for multi-container setups:
+
+```json
+{
+  "name": "Web App with Database",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace"
+}
+```
+
+`docker-compose.yml`:
+
+```yaml
+version: '3.8'
+services:
+  app:
+    build: .
+    volumes:
+      - .:/workspace
+    depends_on:
+      - db
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: password
+```
+
+## Connection Methods
+
+### Automatic Detection
+
+Zed detects dev container configurations when you open a project. A notification prompts you to reopen the project in a container.
+
+To disable automatic prompts, add this to your settings:
+
+```json
+{
+  "dev_container_suggest_dismissed": true
+}
+```
+
+### Manual Connection
+
+1. Open the command palette: `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Linux/Windows)
+2. Search for "Open Dev Container"
+3. Select your project from the list
+
+### Command Line
+
+Open a project in a dev container directly:
+
+```sh
+zed dev-container:///path/to/project
+```
+
+## Docker vs Podman
+
+Zed supports both Docker and Podman as container runtimes.
+
+### Using Docker (Default)
+
+No additional configuration needed. Zed uses `docker` on your PATH.
+
+### Using Podman
+
+Configure Podman in your connection settings. Create a custom connection in `~/.config/zed/settings.json`:
+
+```json
+{
+  "dev_containers": [
+    {
+      "name": "My Container",
+      "container_id": "my-container",
+      "use_podman": true
+    }
+  ]
+}
+```
+
+## Container Configuration Options
+
+### DevContainer.json Reference
+
+Key properties supported by Zed:
+
+```json
+{
+  "name": "Container display name",
+  "image": "docker.io/library/ubuntu:22.04",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "..",
+    "args": {
+      "VARIANT": "22.04"
+    }
+  },
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/home/developer/.ssh,readonly,type=bind"
+  ],
+  "remoteUser": "developer",
+  "containerEnv": {
+    "MY_VAR": "value"
+  },
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/custom/bin"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  },
+  "customizations": {
+    "zed": {
+      "extensions": ["rust", "python"]
+    }
+  }
+}
+```
+
+### Property Descriptions
+
+- **`name`**: Display name for the container
+- **`image`**: Base container image to use
+- **`build`**: Build a custom image from a Dockerfile
+- **`workspaceFolder`**: Path inside container where project is mounted
+- **`workspaceMount`**: Custom mount configuration for the workspace
+- **`mounts`**: Additional bind mounts or volumes
+- **`remoteUser`**: User account inside the container (default: root)
+- **`containerEnv`**: Environment variables set in the container
+- **`remoteEnv`**: Environment variables for remote operations
+- **`features`**: Dev container features to install (pre-built tools)
+- **`customizations.zed`**: Zed-specific settings and extensions
+
+## Remote Dev Containers
+
+Combine SSH remote development with dev containers:
+
+1. Connect to a remote server via SSH (see [SSH Remote Development](./ssh))
+2. Open a project on the remote server
+3. Configure a dev container in that project
+4. Zed will use Docker/Podman on the remote server
+
+This allows you to:
+
+- Use powerful remote hardware for containers
+- Share containers across team members
+- Isolate development from your local machine
+
+### Configuration Example
+
+SSH connection in `settings.json`:
+
+```json
+{
+  "ssh_connections": [
+    {
+      "host": "dev-server.example.com",
+      "username": "developer"
+    }
+  ]
+}
+```
+
+Dev container in the remote project:
+
+```json
+{
+  "name": "Remote Container",
+  "image": "rust:latest",
+  "workspaceFolder": "/workspace"
+}
+```
+
+## Container Lifecycle
+
+### Starting Containers
+
+When you connect to a dev container, Zed:
+
+1. Checks if a container with the configuration exists
+2. Builds the image if needed (from Dockerfile or pulls base image)
+3. Starts the container if not running
+4. Uploads the Zed remote server binary to the container
+5. Connects to the container and opens your project
+
+### Stopping Containers
+
+Containers persist after closing Zed. To stop manually:
+
+```sh
+docker stop <container-id>
+```
+
+Or with Podman:
+
+```sh
+podman stop <container-id>
+```
+
+### Rebuilding Containers
+
+After changing your `devcontainer.json` or Dockerfile:
+
+1. Stop and remove the old container:
+   ```sh
+   docker rm -f <container-id>
+   ```
+2. Reconnect in Zed to build and start a new container
+
+## Working with Containers
+
+### File Synchronization
+
+Your project files are mounted into the container:
+
+- Changes made in Zed are immediately visible in the container
+- Files created in the container appear in Zed
+- Use `.gitignore` to exclude generated files
+
+### Terminals
+
+Terminals opened in Zed run inside the container:
+
+- Full access to container's filesystem
+- Environment variables from `containerEnv` and `remoteEnv`
+- Run build commands with container's toolchain
+
+### Language Servers
+
+Language servers run inside the container:
+
+- Install language servers in your container image
+- Or use dev container features to install them automatically
+- Zed extensions are propagated to the container
+
+### Tasks
+
+Zed tasks execute inside the container:
+
+```json
+{
+  "tasks": [
+    {
+      "label": "Build",
+      "command": "cargo build"
+    },
+    {
+      "label": "Test",
+      "command": "cargo test"
+    }
+  ]
+}
+```
+
+These commands use the container's environment and tools.
+
+## Port Forwarding
+
+Forward ports from the container to your local machine:
+
+### In devcontainer.json
+
+```json
+{
+  "forwardPorts": [3000, 8080]
+}
+```
+
+### In SSH Connection Settings
+
+For remote containers, configure port forwarding in the SSH connection:
+
+```json
+{
+  "ssh_connections": [
+    {
+      "host": "dev-server.example.com",
+      "port_forwards": [
+        { "local_port": 3000, "remote_port": 3000 }
+      ]
+    }
+  ]
+}
+```
+
+## Dev Container Features
+
+Features are pre-packaged tools and runtimes. Common features:
+
+### Node.js
+
+```json
+{
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  }
+}
+```
+
+### Python
+
+```json
+{
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    }
+  }
+}
+```
+
+### Git
+
+```json
+{
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  }
+}
+```
+
+### Docker-in-Docker
+
+```json
+{
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  }
+}
+```
+
+Find more features at [containers.dev/features](https://containers.dev/features).
+
+## Zed-Specific Customizations
+
+### Extensions
+
+Install Zed extensions in the container:
+
+```json
+{
+  "customizations": {
+    "zed": {
+      "extensions": ["rust", "python", "toml"]
+    }
+  }
+}
+```
+
+### Settings
+
+Apply Zed settings in the container:
+
+```json
+{
+  "customizations": {
+    "zed": {
+      "settings": {
+        "tab_size": 2,
+        "format_on_save": "on"
+      }
+    }
+  }
+}
+```
+
+## Troubleshooting
+
+### Container Fails to Start
+
+1. **Check Docker/Podman**: Ensure the container runtime is installed and running
+2. **View logs**: Run `docker logs <container-id>` or `podman logs <container-id>`
+3. **Test image manually**: `docker run -it <image> /bin/bash`
+4. **Check permissions**: Ensure your user can access Docker socket
+
+### Binary Upload Fails
+
+- **Ensure user exists**: The `remoteUser` must exist in the container
+- **Check permissions**: The user needs write access to the home directory
+- **Verify platform**: Container must run on a supported architecture (x86_64 or ARM64)
+
+### Language Server Issues
+
+- **Install in container**: Language servers must be installed in the container image
+- **Check PATH**: Ensure language servers are on the container's PATH
+- **Use features**: Dev container features can install common language servers
+
+### Performance Problems
+
+- **Use volumes**: Avoid bind mounts for large dependencies (use Docker volumes)
+- **Limit mounts**: Only mount necessary directories
+- **Check resources**: Ensure Docker has sufficient CPU and memory allocated
+
+### Port Forwarding Not Working
+
+1. **Check container ports**: Use `docker ps` to verify published ports
+2. **Verify firewall**: Ensure ports are not blocked by firewall rules
+3. **Test locally**: Try `curl localhost:<port>` on the host
+
+## Best Practices
+
+### Container Image Design
+
+- Use official base images for stability
+- Pin image versions for reproducibility
+- Create a non-root user for security
+- Install dependencies in layers for faster rebuilds
+
+### Configuration Management
+
+- Commit `.devcontainer` folder to version control
+- Document any manual setup steps in README
+- Use features for common dependencies
+- Test container builds on different machines
+
+### Security
+
+- Avoid running as root user
+- Don't commit secrets in Dockerfile or devcontainer.json
+- Use build arguments for sensitive values
+- Limit bind mounts to necessary directories
+
+### Performance
+
+- Use volumes for node_modules, cargo target, etc.
+- Exclude large generated directories from workspace mount
+- Keep container images small
+- Use multi-stage Dockerfiles for smaller images
+
+## Examples
+
+### Rust Development
+
+```json
+{
+  "name": "Rust Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/rust:latest",
+  "customizations": {
+    "zed": {
+      "extensions": ["rust", "toml"]
+    }
+  },
+  "mounts": [
+    "source=cargo-cache,target=/usr/local/cargo/registry,type=volume"
+  ]
+}
+```
+
+### Node.js Development
+
+```json
+{
+  "name": "Node.js Dev Container",
+  "image": "node:20-bullseye",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "customizations": {
+    "zed": {
+      "extensions": ["typescript", "eslint"]
+    }
+  },
+  "forwardPorts": [3000],
+  "postCreateCommand": "npm install"
+}
+```
+
+### Python Data Science
+
+```json
+{
+  "name": "Python Data Science",
+  "image": "jupyter/scipy-notebook:latest",
+  "remoteUser": "jovyan",
+  "customizations": {
+    "zed": {
+      "extensions": ["python"]
+    }
+  },
+  "forwardPorts": [8888],
+  "postCreateCommand": "pip install -r requirements.txt"
+}
+```
+
+### Full Stack Web App
+
+```json
+{
+  "name": "Full Stack App",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "zed": {
+      "extensions": ["typescript", "rust"]
+    }
+  },
+  "forwardPorts": [3000, 8080]
+}
+```
+
+## Next Steps
+
+- [Learn about SSH remote development](./ssh)
+- [Explore remote development overview](./overview)
+- [Configure Zed tasks for container workflows](https://zed.dev/docs/running-testing)
+- [Read the dev container specification](https://containers.dev)
+- [Get help in Discord](https://zed.dev/community-links) (#remoting-feedback)

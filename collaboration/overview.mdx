@@ -1,0 +1,207 @@
+---
+title: Collaboration Overview
+description: Real-time collaboration features in Zed including multiplayer editing, voice, and video
+---
+
+## Introduction
+
+Zed provides powerful real-time collaboration features that enable teams to code together seamlessly. Built on LiveKit infrastructure, Zed's collaboration tools include multiplayer editing, voice and video calling, screen sharing, and channel-based communication.
+
+## Key Features
+
+### Multiplayer Editing
+
+Zed's collaboration system allows multiple developers to edit code simultaneously in real-time:
+
+- **Real-time synchronization**: See cursors and edits from other participants instantly
+- **Project sharing**: Share your entire project with team members
+- **Follow mode**: Follow another developer's cursor and viewport
+- **Guest access**: Invite collaborators with different permission levels
+
+### Voice and Video Communication
+
+Integrated audio and video calling makes communication effortless:
+
+- **Voice calls**: Crystal-clear audio communication using LiveKit
+- **Video tracks**: Optional video streaming between participants
+- **Mute controls**: Easy mute/unmute functionality
+- **Audio settings**: Configure microphone and audio preferences
+
+### Participant Roles
+
+Zed supports different participant roles to control access:
+
+- **Admin**: Full control over the channel and participants
+- **Member**: Can edit shared projects and access all features
+- **Talker**: Voice access but limited editing permissions
+- **Guest**: Read-only or limited access to shared projects
+
+## Getting Started
+
+### Authentication
+
+Before using collaboration features, you need to sign in to Zed:
+
+1. Open Zed and navigate to the sign-in page
+2. Authenticate using your GitHub account
+3. Once authenticated, you'll have access to channels and collaboration features
+
+### Joining a Collaboration Session
+
+There are several ways to start collaborating:
+
+**Join a Channel:**
+```bash
+# Channels appear in the collaboration panel
+# Click a channel to join the voice/video call
+```
+
+**Accept a Direct Call:**
+- When another user calls you, you'll receive a notification
+- Click to accept and join the call
+
+**Join a Shared Project:**
+- When someone shares a project in a call, it appears in the collaboration panel
+- Click the project to open it and start collaborating
+
+## Collaboration Panel
+
+The collaboration panel is your hub for all collaboration activities:
+
+- **Active Call Section**: Shows current call participants
+- **Channels Section**: Lists available channels you can join
+- **Contacts Section**: Shows online/offline contacts
+- **Channel Invites**: Displays pending channel invitations
+
+### Opening the Collaboration Panel
+
+Access the panel using:
+- Keyboard shortcut (default varies by platform)
+- Menu: View → Collaboration Panel
+- Command palette: "Toggle Collaboration Panel"
+
+## Call Settings
+
+Configure your collaboration experience in settings:
+
+```json
+{
+  "calls": {
+    "mute_on_join": false,
+    "share_on_join": false
+  }
+}
+```
+
+**Options:**
+- `mute_on_join`: Automatically mute your microphone when joining calls
+- `share_on_join`: Automatically share your current project when joining
+
+## Project Sharing
+
+### Sharing Your Project
+
+To share your current project with call participants:
+
+1. Join a channel or call
+2. Use the "Share Project" action
+3. Your project appears in the collaboration panel for others
+
+### Accessing Shared Projects
+
+When someone shares a project:
+
+1. The project appears under their name in the collaboration panel
+2. Click the project name to open it
+3. You'll see real-time edits from all participants
+
+### Unsharing Projects
+
+To stop sharing:
+- Use the "Unshare Project" action
+- Leave the call (automatically unshares)
+
+## Connection Status
+
+Zed displays connection status in the collaboration panel:
+
+- **Online**: Connected and ready to collaborate
+- **Rejoining**: Temporarily disconnected, attempting to reconnect
+- **Offline**: Not connected to collaboration servers
+
+### Reconnection Behavior
+
+If disconnected, Zed automatically attempts to reconnect:
+
+- Reconnection timeout: 30 seconds
+- Buffered changes are synchronized after reconnection
+- Projects remain open during reconnection attempts
+
+## Follow Mode
+
+Follow another participant to see their work in real-time:
+
+1. Click on a participant in the collaboration panel
+2. Your viewport follows their cursor and editor position
+3. Click again or edit code to stop following
+
+## Participant Management
+
+### Viewing Participants
+
+The collaboration panel shows:
+- Current user (you)
+- Remote participants with their online status
+- Shared projects for each participant
+- Screen sharing status
+
+### Managing Roles (Admin Only)
+
+Channel admins can manage participant permissions:
+
+- Right-click a participant to open the context menu
+- Grant or revoke access levels
+- Promote to talker or member status
+- Remove participants if needed
+
+## Channel Notes
+
+Each channel has associated notes for collaboration:
+
+- Access via the notes icon in the collaboration panel
+- Edit collaboratively with other channel members
+- Changes sync in real-time
+- Great for meeting notes, task lists, or documentation
+
+## Best Practices
+
+1. **Use channels for team organization**: Create channels for projects or teams
+2. **Configure audio settings**: Test your microphone before important calls
+3. **Enable mute_on_join**: Prevents accidental audio interruptions
+4. **Use follow mode for onboarding**: Help new team members navigate the codebase
+5. **Share selectively**: Only share projects relevant to the current collaboration
+
+## Troubleshooting
+
+### Cannot Join Channel
+
+- Verify you're signed in
+- Check your internet connection
+- Ensure you have permission to access the channel
+
+### Audio/Video Issues
+
+- Check system audio permissions for Zed
+- Verify microphone and camera access
+- Try toggling mute/unmute
+
+### Project Sync Issues
+
+- Wait for reconnection if temporarily disconnected
+- Check that the project owner is still in the call
+- Verify you have appropriate permissions (not guest role)
+
+## Next Steps
+
+- [Learn about Channels](/collaboration/channels) - Create and manage channels
+- [Screen Sharing Guide](/collaboration/screen-sharing) - Share your screen with participants

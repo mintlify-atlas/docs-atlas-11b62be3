@@ -1,0 +1,400 @@
+---
+title: Channels
+description: Creating, managing, and joining channels for team collaboration in Zed
+---
+
+## What are Channels?
+
+Channels in Zed are persistent collaboration spaces where teams can communicate, share code, and work together. Each channel provides:
+
+- Voice and video communication
+- Shared notes for documentation
+- Project sharing capabilities
+- Member management and permissions
+- Hierarchical organization with sub-channels
+
+## Channel Types
+
+### Public Channels
+
+Public channels are discoverable and joinable by anyone:
+
+- Visible in channel listings
+- Anyone can join without invitation
+- Great for open-source projects or community spaces
+
+### Private Channels
+
+Private channels require membership:
+
+- Only visible to members
+- Requires invitation from an admin or member
+- Ideal for private team collaboration
+
+## Creating a Channel
+
+### Creating a Root Channel
+
+To create a new top-level channel:
+
+1. Open the collaboration panel
+2. Navigate to the Channels section
+3. Click the "+" or "Create Channel" button
+4. Enter the channel name (without the # prefix)
+5. Select visibility (public or private)
+6. Click "Create"
+
+The channel is created immediately and you become the admin.
+
+### Creating Sub-channels
+
+Organize related channels hierarchically:
+
+1. Right-click on a parent channel
+2. Select "Create Sub-channel"
+3. Enter the sub-channel name
+4. The sub-channel inherits the parent's visibility setting
+
+Sub-channels are useful for:
+- Project-specific rooms within a team channel
+- Feature-specific discussions
+- Separating topics within a larger workspace
+
+### Channel Naming
+
+Best practices for channel names:
+
+- Use descriptive, clear names
+- Avoid special characters (converted to hyphens)
+- Use lowercase for consistency
+- Keep names concise but meaningful
+
+Example hierarchy:
+```
+# project-team
+  # frontend
+  # backend
+  # design-review
+```
+
+## Joining Channels
+
+### Joining from the Panel
+
+1. Open the collaboration panel
+2. Browse the Channels section
+3. Click on a channel to join the call
+4. You'll enter the voice/video call automatically
+
+### Joining via Link
+
+Channels can be shared via links:
+
+```
+https://zed.dev/channel/project-team-123
+```
+
+Clicking a channel link:
+1. Opens Zed (if not already open)
+2. Prompts you to join the channel
+3. Adds you to the channel members (if joining for the first time)
+
+### Accepting Channel Invitations
+
+When invited to a private channel:
+
+1. You'll receive a notification
+2. The channel appears in "Channel Invites" section
+3. Click to accept or decline the invitation
+4. Accepted channels move to your Channels section
+
+## Managing Channel Members
+
+### Viewing Members
+
+To see who's in a channel:
+
+1. Right-click the channel in the collaboration panel
+2. Select "View Members"
+3. A member list appears showing:
+   - Username and avatar
+   - Role (Admin, Member, Talker, Guest, Banned)
+   - Online/offline status
+
+### Inviting Members
+
+Channel admins and members can invite others:
+
+1. Right-click the channel
+2. Select "Invite Members"
+3. Search for users by username
+4. Select the user
+5. Choose their role:
+   - **Admin**: Full management permissions
+   - **Member**: Can invite others and edit shared content
+   - **Talker**: Voice access, limited editing
+   - **Guest**: Restricted access
+6. Click "Invite"
+
+The user receives an invitation they can accept or decline.
+
+### Managing Member Roles
+
+Channel admins can modify member permissions:
+
+1. Open the member list
+2. Right-click a member
+3. Select "Change Role"
+4. Choose the new role
+
+Role changes apply immediately.
+
+### Removing Members
+
+Admins can remove members from channels:
+
+1. Open the member list
+2. Right-click the member to remove
+3. Select "Remove from Channel"
+4. Confirm the action
+
+Removed members:
+- Lose access to private channels
+- Can rejoin public channels
+- Can be re-invited by admins
+
+## Channel Permissions by Role
+
+### Admin Permissions
+
+- Create/delete channels and sub-channels
+- Invite and remove members
+- Change member roles
+- Edit channel settings (name, visibility)
+- Share and edit projects
+- Access voice and video
+- Edit channel notes
+
+### Member Permissions
+
+- Invite new members
+- Share and edit projects
+- Access voice and video
+- Edit channel notes
+- Cannot remove members or change roles
+
+### Talker Permissions
+
+- Access voice communication
+- View shared projects (read-only)
+- Cannot edit projects or notes
+
+### Guest Permissions
+
+- View only access
+- No voice access (until granted)
+- Cannot share projects
+- Cannot edit channel notes
+
+## Channel Settings
+
+### Renaming Channels
+
+Channel admins can rename channels:
+
+1. Right-click the channel
+2. Select "Rename Channel"
+3. Enter the new name
+4. Press Enter to save
+
+All members see the updated name immediately.
+
+### Changing Visibility
+
+Toggle between public and private:
+
+1. Right-click the channel (must be admin)
+2. Select "Channel Settings"
+3. Toggle "Public Channel"
+4. Confirm the change
+
+**Note**: Changing from public to private doesn't remove existing members.
+
+### Deleting Channels
+
+Permanently delete a channel:
+
+1. Right-click the channel (must be admin)
+2. Select "Delete Channel"
+3. Confirm the deletion
+
+**Warning**: 
+- Deletion is permanent
+- All sub-channels are also deleted
+- Channel notes and history are lost
+- Members are notified
+
+## Channel Organization
+
+### Collapsing Channels
+
+Manage visibility in the panel:
+
+- Click the arrow icon next to a channel to collapse/expand
+- Collapsed channels hide sub-channels
+- Useful for large channel hierarchies
+
+### Reordering Channels
+
+Channel admins can reorder channels:
+
+1. Right-click a channel
+2. Select "Move Channel Up" or "Move Channel Down"
+3. The channel reorders within its parent
+
+Ordering is saved and synchronized across all members.
+
+### Moving Channels
+
+Reorganize your channel hierarchy:
+
+1. Right-click a channel
+2. Select "Start Move Channel"
+3. Navigate to the destination parent channel
+4. Right-click the destination
+5. Select "Move Selected Here"
+
+The channel and all its sub-channels move to the new location.
+
+## Channel Notes
+
+Every channel has collaborative notes:
+
+### Accessing Notes
+
+1. Expand a channel in the collaboration panel
+2. Click the "notes" item (file icon)
+3. The channel buffer opens in your editor
+
+### Editing Notes
+
+- Edit like any text buffer
+- Changes sync in real-time to all members
+- Changes persist even when offline
+- Conflicts are automatically resolved
+
+### Notes Features
+
+- Full Markdown support
+- Collaborative editing with multiple cursors
+- Version tracking
+- Link to specific headings in notes
+
+### Linking to Notes
+
+Share specific sections:
+
+```
+https://zed.dev/channel/project-team-123/notes#getting-started
+```
+
+Links to notes sections:
+- Jump directly to a heading
+- Great for sharing meeting notes or documentation
+- Automatically generated from heading text
+
+## Channel Participants
+
+View active participants in channels:
+
+- The collaboration panel shows who's currently in each channel
+- Avatars appear next to active channels
+- Participant count displays for larger channels
+
+### Participant Indicator
+
+- **Green dot**: User is actively in the channel call
+- **No indicator**: Channel is empty
+- **Multiple avatars**: Shows first few participants
+
+## Best Practices
+
+### Channel Structure
+
+1. **Use hierarchies**: Organize with parent/child channels
+2. **Limit top-level channels**: Prevents clutter
+3. **Clear naming conventions**: Make channels easy to find
+4. **Archive inactive channels**: Delete or clearly mark unused channels
+
+### Member Management
+
+1. **Start with fewer permissions**: Promote members as needed
+2. **Multiple admins**: Distribute management responsibilities
+3. **Regular cleanup**: Remove inactive members periodically
+4. **Document roles**: Use channel notes to clarify permissions
+
+### Channel Usage
+
+1. **Channel notes for context**: Document channel purpose and guidelines
+2. **Sub-channels for focus**: Separate conversations by topic
+3. **Public for open source**: Make community channels public
+4. **Private for teams**: Keep internal work in private channels
+
+## Advanced Features
+
+### Channel Search
+
+Quickly find channels:
+
+1. Focus the collaboration panel filter (top of panel)
+2. Type to search channel names
+3. Results update in real-time
+4. Press Enter to jump to the first result
+
+### Filtering Active Channels
+
+Show only channels with active participants:
+
+1. Enable the "Show active only" filter
+2. Empty channels hide from view
+3. Great for large channel lists
+
+### Channel Links
+
+Generate shareable links:
+
+1. Right-click a channel
+2. Select "Copy Channel Link"
+3. Share the link with team members
+4. Recipients can click to join
+
+## Troubleshooting
+
+### Cannot Create Channel
+
+- Verify you're signed in
+- Check your internet connection
+- Ensure you have permissions (some orgs restrict channel creation)
+
+### Channel Not Appearing
+
+- Refresh the collaboration panel
+- Check if the channel was deleted
+- Verify your membership status
+
+### Cannot Invite Members
+
+- Ensure you have Member or Admin role
+- Check that the user exists and is not banned
+- Verify you're connected to the server
+
+### Changes Not Syncing
+
+- Check your connection status
+- Wait for automatic reconnection
+- Verify other members can see changes (may be a local issue)
+
+## Next Steps
+
+- [Screen Sharing Guide](/collaboration/screen-sharing) - Share your screen in channels
+- [Collaboration Overview](/collaboration/overview) - Learn more about collaboration features

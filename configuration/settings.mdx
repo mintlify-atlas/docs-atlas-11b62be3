@@ -1,0 +1,347 @@
+---
+title: Settings
+description: Configure Zed's behavior through settings.json
+---
+
+Zed's settings system allows you to customize nearly every aspect of the editor through a JSON configuration file. Settings can be global or project-specific, with support for platform-specific and release channel overrides.
+
+## Settings Files
+
+Zed supports multiple levels of settings:
+
+- **User Settings**: `~/.config/zed/settings.json` - Your personal global configuration
+- **Project Settings**: `.zed/settings.json` in your project root - Project-specific overrides
+- **Server Settings**: Applied to remote development environments
+
+To open your settings file, use:
+- `cmd-,` (macOS) or `ctrl-,` (Linux/Windows)
+- Command Palette: "zed: open settings"
+
+## Settings Structure
+
+Settings are organized as a JSON object with the `$schema` declaration for autocomplete:
+
+```json
+{
+  "$schema": "zed://schemas/settings",
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "One Dark"
+  },
+  "buffer_font_size": 15,
+  "vim_mode": false
+}
+```
+
+## Common Settings
+
+### Appearance
+
+#### Theme Selection
+
+Themes can be configured statically or dynamically based on system appearance:
+
+```json
+// Static theme
+"theme": "One Dark"
+
+// Dynamic theme based on system appearance
+"theme": {
+  "mode": "system",  // Options: "system", "light", "dark"
+  "light": "One Light",
+  "dark": "One Dark"
+}
+```
+
+#### Icon Theme
+
+```json
+"icon_theme": "Zed (Default)"
+```
+
+#### Font Configuration
+
+```json
+// UI font
+"ui_font_family": ".ZedSans",
+"ui_font_size": 16,
+"ui_font_weight": 400,
+"ui_font_features": {
+  "calt": false  // Disable ligatures
+},
+
+// Buffer/editor font
+"buffer_font_family": ".ZedMono",
+"buffer_font_size": 15,
+"buffer_font_weight": 400,
+"buffer_font_features": {},
+"buffer_line_height": "comfortable"  // Options: "comfortable", "standard", {"custom": 1.5}
+```
+
+#### UI Density
+
+```json
+"ui_density": "default"  // Options: "compact", "default", "comfortable"
+```
+
+### Editor Behavior
+
+#### Tab and Indentation
+
+```json
+"tab_size": 4,
+"hard_tabs": false,
+"soft_wrap": "none",  // Options: "none", "editor_width", "preferred_line_length"
+"preferred_line_length": 80,
+"show_wrap_guides": true,
+"wrap_guides": [80, 120]
+```
+
+#### Cursor and Selection
+
+```json
+"cursor_blink": true,
+"cursor_shape": "bar",  // Options: "bar", "block", "underline", "hollow"
+"selection_highlight": true,
+"rounded_selection": true
+```
+
+#### Autocomplete and Editing
+
+```json
+"show_completions_on_input": true,
+"show_completion_documentation": true,
+"use_autoclose": true,
+"use_auto_surround": true,
+"auto_indent": true,
+"auto_indent_on_paste": true
+```
+
+#### Whitespace Display
+
+```json
+"show_whitespaces": "selection",  // Options: "selection", "none", "all", "boundary", "trailing"
+"whitespace_map": {
+  "space": "•",
+  "tab": "→"
+}
+```
+
+### Vim Mode
+
+```json
+"vim_mode": false,
+"helix_mode": false,  // Enables Helix-style keybindings (also enables vim_mode)
+"vim": {
+  "default_mode": "normal",  // Options: "normal", "insert"
+  "toggle_relative_line_numbers": false,
+  "use_system_clipboard": "never",  // Options: "never", "always", "on_yank"
+  "use_smartcase_find": true,
+  "gdefault": false,
+  "cursor_shape": {
+    "normal": "block",
+    "insert": "bar",
+    "visual": "block",
+    "replace": "underline"
+  }
+}
+```
+
+### LSP and Language Servers
+
+```json
+"enable_language_server": true,
+"lsp": {
+  "rust-analyzer": {
+    "initialization_options": {
+      "check": {
+        "command": "clippy"
+      }
+    }
+  }
+},
+"global_lsp_settings": {
+  "completion": {
+    "trigger_characters": []
+  }
+}
+```
+
+### Format on Save
+
+```json
+"format_on_save": "on",  // Options: "on", "off", "language_server", "external"
+"formatter": "language_server",  // Options: "language_server", "prettier", "external"
+"remove_trailing_whitespace_on_save": true,
+"ensure_final_newline_on_save": true,
+"code_actions_on_format": {
+  "source.organizeImports": true,
+  "source.fixAll": false
+}
+```
+
+### Git Integration
+
+```json
+"git": {
+  "git_gutter": "tracked_files",  // Options: "tracked_files", "hide"
+  "inline_blame": {
+    "enabled": true,
+    "delay_ms": 600
+  }
+}
+```
+
+### Diagnostics
+
+```json
+"diagnostics": {
+  "include_warnings": true
+},
+"diagnostics_max_severity": "all",  // Options: "off", "error", "warning", "info", "hint", "all"
+```
+
+### Panels
+
+```json
+"project_panel": {
+  "button": true,
+  "dock": "left",  // Options: "left", "right"
+  "default_width": 240,
+  "file_icons": true,
+  "folder_icons": true,
+  "git_status": true,
+  "indent_size": 20,
+  "auto_reveal_entries": true,
+  "auto_fold_dirs": true
+},
+"outline_panel": {
+  "button": true,
+  "dock": "left",
+  "default_width": 240
+},
+"git_panel": {
+  "button": true,
+  "dock": "left",
+  "default_width": 360
+}
+```
+
+### Telemetry
+
+```json
+"telemetry": {
+  "diagnostics": true,
+  "metrics": true
+}
+```
+
+### Terminal
+
+```json
+"terminal": {
+  "font_family": null,  // null inherits buffer_font_family
+  "font_size": null,    // null inherits buffer_font_size
+  "line_height": "comfortable",
+  "blinking": "terminal_controlled",
+  "alternate_scroll": "on",
+  "option_as_meta": false,
+  "copy_on_select": false,
+  "button": true,
+  "dock": "bottom",
+  "default_width": 640,
+  "default_height": 320,
+  "working_directory": "current_project_directory"  // Options: "current_project_directory", "always_home", "first_project_directory"
+}
+```
+
+## Platform-Specific Settings
+
+Override settings for specific platforms:
+
+```json
+{
+  "buffer_font_size": 14,
+  "macos": {
+    "buffer_font_size": 15
+  },
+  "linux": {
+    "buffer_font_size": 13
+  },
+  "windows": {
+    "buffer_font_size": 13
+  }
+}
+```
+
+## Release Channel Overrides
+
+Different settings for different release channels:
+
+```json
+{
+  "theme": "One Dark",
+  "dev": {
+    "theme": "Gruvbox Dark"
+  },
+  "nightly": {
+    "theme": "Tokyo Night"
+  },
+  "preview": {},
+  "stable": {}
+}
+```
+
+## Settings Profiles
+
+Create named profiles for different workflows:
+
+```json
+{
+  "theme": "One Dark",
+  "profiles": {
+    "presentation": {
+      "buffer_font_size": 20,
+      "ui_font_size": 18
+    },
+    "focus": {
+      "tabs": {
+        "file_icons": false,
+        "git_status": false
+      }
+    }
+  }
+}
+```
+
+Switch profiles via the command palette: "zed: switch settings profile".
+
+## Project Settings
+
+Create a `.zed/settings.json` file in your project root to override user settings:
+
+```json
+{
+  "tab_size": 2,
+  "hard_tabs": false,
+  "formatter": "prettier",
+  "format_on_save": "on"
+}
+```
+
+Project settings take precedence over user settings but cannot override base keymaps or themes.
+
+## Schema Validation
+
+Zed provides JSON schema validation for settings. The `"$schema"` field enables autocomplete and validation in the editor:
+
+```json
+{
+  "$schema": "zed://schemas/settings"
+}
+```
+
+## Settings Migration
+
+Zed automatically migrates settings when the format changes between versions. Check the logs if you encounter issues after an update.

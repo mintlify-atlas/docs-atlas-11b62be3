@@ -1,97 +1,200 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Zed Documentation"
+description: "High-performance, multiplayer code editor built with Rust"
+mode: "custom"
 ---
 
-## Setting up
+<div className="relative overflow-hidden py-20 px-6 bg-gradient-to-br from-[#064ccd] via-[#064ccd] to-[#0540a8] dark:from-[#064ccd] dark:via-[#064ccd] dark:to-[#032570]">
+  <div className="max-w-6xl mx-auto">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div className="lg:col-span-7">
+        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6">
+          Code at the speed of thought
+        </h1>
+        <p className="text-xl text-white/90 mb-8 max-w-2xl">
+          Zed is a high-performance, multiplayer code editor from the creators of Atom and Tree-sitter. Built with Rust for unparalleled speed and collaboration.
+        </p>
+        <div className="flex flex-wrap gap-4">
+          <a 
+            href="/quickstart" 
+            className="inline-flex items-center px-6 py-3 bg-white text-[#064ccd] font-semibold rounded-lg hover:bg-gray-100 transition-colors no-underline"
+          >
+            Get Started
+            <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </a>
+          <a 
+            href="/installation" 
+            className="inline-flex items-center px-6 py-3 border-2 border-white/30 bg-white/10 text-white font-semibold rounded-lg hover:bg-white/20 transition-colors no-underline backdrop-blur-sm"
+          >
+            Install Zed
+          </a>
+        </div>
+      </div>
+      <div className="lg:col-span-5 hidden lg:block">
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/10 rounded-2xl"></div>
+          <img 
+            src="https://zed.dev/img/hero.webp" 
+            alt="Zed editor interface"
+            className="rounded-2xl shadow-2xl"
+            noZoom
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-Get your documentation site up and running in minutes.
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-4">
+    Quick Start
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Get up and running with Zed in minutes
+  </p>
+  
+  <Steps>
+    <Step title="Install Zed">
+      Download Zed for your platform: macOS, Linux, or Windows. Install using your package manager or direct download from [zed.dev](https://zed.dev/download).
+      
+      ```bash macOS
+      brew install zed
+      ```
+      
+      ```bash Linux
+      curl -f https://zed.dev/install.sh | sh
+      ```
+    </Step>
+    
+    <Step title="Open a project">
+      Launch Zed and open a folder or project. You can also use the CLI to open files directly:
+      
+      ```bash
+      zed path/to/your/project
+      ```
+      
+      Zed automatically detects your project's language and installs the appropriate language server.
+    </Step>
+    
+    <Step title="Start coding">
+      Experience blazing-fast editing with GPU acceleration, intelligent code completion, and integrated AI assistance. Press `Cmd+K` (macOS) or `Ctrl+K` (Linux/Windows) to open the command palette and explore features.
+    </Step>
+  </Steps>
+</div>
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-4">
+    Explore by Feature
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Discover what makes Zed the fastest code editor
+  </p>
+  
+  <CardGroup cols={3}>
     <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
+      title="AI Features"
+      icon="brain"
+      href="/ai/overview"
+    >
+      Integrated AI assistance with support for Claude, GPT-4, and other LLM providers
+    </Card>
+    <Card
+      title="Collaboration"
+      icon="users"
+      href="/collaboration/overview"
+    >
+      Real-time multiplayer editing, voice chat, and screen sharing
+    </Card>
+    <Card
+      title="Extensions"
+      icon="puzzle-piece"
+      href="/extensions/overview"
+    >
+      Extend Zed with language servers, themes, and custom features
+    </Card>
+    <Card
+      title="Terminal"
+      icon="terminal"
+      href="/features/terminal"
+    >
+      Built-in terminal with task runner and shell integration
+    </Card>
+    <Card
+      title="Git Integration"
+      icon="code-branch"
+      href="/features/git"
+    >
+      Visual diff, blame annotations, and commit management
+    </Card>
+    <Card
+      title="Remote Development"
+      icon="server"
+      href="/remote/overview"
+    >
+      SSH remote editing and dev container support
+    </Card>
+  </CardGroup>
+</div>
 
-## Create beautiful pages
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-4">
+    Platform Support
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Zed runs on all major platforms with native performance
+  </p>
+  
+  <CardGroup cols={3}>
+    <Card
+      title="macOS"
+      icon="apple"
+      href="/platforms/macos"
+    >
+      Native macOS app with full system integration
+    </Card>
+    <Card
+      title="Linux"
+      icon="linux"
+      href="/platforms/linux"
+    >
+      Wayland and X11 support with GPU acceleration
+    </Card>
+    <Card
+      title="Windows"
+      icon="windows"
+      href="/platforms/windows"
+    >
+      Native Windows app with full DirectX support
+    </Card>
+  </CardGroup>
+</div>
 
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<div className="mt-20 mb-16 max-w-5xl mx-auto px-6">
+  <div className="bg-gradient-to-r from-[#064ccd] to-[#0540a8] dark:from-[#064ccd] dark:to-[#032570] rounded-2xl p-12 text-center">
+    <h2 className="text-3xl font-bold text-white mb-4">
+      Ready to start coding faster?
+    </h2>
+    <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+      Join thousands of developers who have switched to Zed for its unmatched performance and collaboration features.
+    </p>
+    <div className="flex flex-wrap gap-4 justify-center">
+      <a 
+        href="/quickstart" 
+        className="inline-flex items-center px-8 py-3 bg-white text-[#064ccd] font-semibold rounded-lg hover:bg-gray-100 transition-colors no-underline"
+      >
+        Get Started Now
+        <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+        </svg>
+      </a>
+      <a 
+        href="https://github.com/zed-industries/zed" 
+        className="inline-flex items-center px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white/10 transition-colors no-underline"
+      >
+        View on GitHub
+      </a>
+    </div>
+  </div>
+</div>

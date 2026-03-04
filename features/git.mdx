@@ -1,0 +1,429 @@
+---
+title: Git Integration
+description: Comprehensive Git support including status, diff, blame, branches, and commit operations
+---
+
+## Overview
+
+Zed provides deep Git integration built on libgit2 and custom Git command execution, offering both visual feedback and powerful Git operations directly within the editor.
+
+## Git Status
+
+Zed continuously tracks Git status and displays changes in the editor.
+
+<CodeGroup>
+```rust git/src/status.rs
+pub struct GitStatus {
+    // Git status implementation
+}
+
+pub enum StatusCode {
+    Added,
+    Modified,
+    Deleted,
+    Renamed,
+    // ... other status codes
+}
+```
+</CodeGroup>
+
+### Visual Indicators
+
+- **Gutter indicators** - Shows modified, added, and deleted lines
+- **File tree colors** - Modified files highlighted in project panel
+- **Git blame** - Inline blame information
+
+## Diff Viewing
+
+### Diff Hunks
+
+View and interact with Git diff hunks directly in the editor.
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Expands all diff hunks in the editor.
+ExpandAllDiffHunks,
+/// Collapses all diff hunks in the editor.
+CollapseAllDiffHunks,
+/// Toggles diff display for selected hunks.
+ToggleSelectedDiffHunks,
+/// Goes to the next diff hunk.
+GoToHunk,
+/// Goes to the previous diff hunk.
+GoToPreviousHunk,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+'` - Toggle selected diff hunks
+- `Cmd+"` - Expand all diff hunks
+
+### Applying Changes
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Applies all diff hunks in the editor.
+ApplyAllDiffHunks,
+/// Applies the diff hunk at the current position.
+ApplyDiffHunk,
+```
+</CodeGroup>
+
+## Git Blame
+
+View authorship and commit information for each line.
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Shows git blame information for the current line.
+BlameHover,
+/// Toggles inline git blame display.
+ToggleGitBlameInline,
+/// Opens the git commit for the blame at cursor.
+OpenGitBlameCommit,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+K Cmd+B` - Show blame hover
+- `Cmd+Alt+G B` - Toggle inline git blame
+
+### Blame Data Structure
+
+<CodeGroup>
+```rust git/src/blame.rs
+pub struct BlameEntry {
+    // Commit information for a line
+}
+
+pub struct GitBlame {
+    // Git blame information
+}
+
+pub trait BlameRenderer {
+    // Render blame information
+}
+```
+</CodeGroup>
+
+## Branch Management
+
+<CodeGroup>
+```rust git/src/repository.rs
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct Branch {
+    pub is_head: bool,
+    pub ref_name: SharedString,
+    pub upstream: Option<Upstream>,
+    pub most_recent_commit: Option<CommitSummary>,
+}
+
+impl Branch {
+    pub fn name(&self) -> &str {
+        self.ref_name
+            .as_ref()
+            .strip_prefix("refs/heads/")
+            .or_else(|| self.ref_name.as_ref().strip_prefix("refs/remotes/"))
+            .unwrap_or(self.ref_name.as_ref())
+    }
+
+    pub fn is_remote(&self) -> bool {
+        self.ref_name.starts_with("refs/remotes/")
+    }
+
+    pub fn remote_name(&self) -> Option<&str> {
+        self.ref_name
+            .strip_prefix("refs/remotes/")
+            .and_then(|stripped| stripped.split("/").next())
+    }
+}
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+Ctrl+B` - Open recent branches
+
+### Branch Operations
+
+- Create new branches
+- Switch between branches
+- View branch history
+- Track upstream status
+
+## Git Worktrees
+
+Zed supports Git worktrees for working on multiple branches simultaneously.
+
+<CodeGroup>
+```rust git/src/repository.rs
+/// Default value for the `git.worktree_directory` setting.
+pub const DEFAULT_WORKTREE_DIRECTORY: &str = "../worktrees";
+
+/// Resolves the configured worktree directory to an absolute path.
+pub fn resolve_worktree_directory(
+    working_directory: &Path,
+    worktree_directory_setting: &str,
+) -> PathBuf {
+    let trimmed = worktree_directory_setting.trim_end_matches(['/', '\\']);
+    let joined = working_directory.join(trimmed);
+    let resolved = normalize_path(&joined);
+
+    if resolved.starts_with(working_directory) {
+        resolved
+    } else if let Some(repo_dir_name) = working_directory.file_name() {
+        resolved.join(repo_dir_name)
+    } else {
+        resolved
+    }
+}
+
+/// Returns the full absolute path for a specific branch's worktree
+pub fn worktree_path_for_branch(
+    working_directory: &Path,
+    worktree_directory_setting: &str,
+    branch: &str,
+) -> PathBuf {
+    resolve_worktree_directory(working_directory, worktree_directory_setting).join(branch)
+}
+```
+</CodeGroup>
+
+### Worktree Configuration
+
+Configure where worktrees are created:
+
+```json
+{
+  "git": {
+    "worktree_directory": "../worktrees"
+  }
+}
+```
+
+## Git Graph
+
+View commit history and branch structure visually.
+
+<CodeGroup>
+```rust git/src/repository.rs
+/// Commit data needed for the git graph visualization.
+#[derive(Debug, Clone)]
+pub struct GraphCommitData {
+    pub sha: Oid,
+    /// Most commits have a single parent, so we use a SmallVec to avoid allocations.
+    pub parents: SmallVec<[Oid; 1]>,
+    pub author_name: SharedString,
+    pub author_email: SharedString,
+    pub commit_timestamp: i64,
+    pub subject: SharedString,
+}
+
+#[derive(Debug)]
+pub struct InitialGraphCommitData {
+    pub sha: Oid,
+    pub parents: SmallVec<[Oid; 1]>,
+    pub ref_names: Vec<SharedString>,
+}
+
+/// Number of commits to load per chunk for the git graph.
+pub const GRAPH_CHUNK_SIZE: usize = 1000;
+```
+</CodeGroup>
+
+## Staging and Committing
+
+### Stage Changes
+
+<CodeGroup>
+```rust git/src/repository.rs
+// Git staging operations available through the UI
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+Y` - Stage and move to next hunk
+- `Cmd+Shift+Y` - Unstage and move to next hunk
+- `Cmd+Alt+Y` - Toggle staged
+
+### Restore Changes
+
+<CodeGroup>
+```rust git/src/restore.rs
+pub struct Restore {
+    // Restore file to Git version
+}
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+Alt+Z` - Restore file (discard changes)
+
+## Git Panel
+
+View and manage Git changes in a dedicated panel.
+
+**Keybindings:**
+- `Ctrl+Shift+G` - Toggle Git panel focus
+
+### Panel Features
+
+- View all modified files
+- Stage/unstage changes
+- Review diffs
+- Commit changes
+- Manage branches
+
+## Git Actions in Editor
+
+### Modified Files
+
+<CodeGroup>
+```rust keymaps/default-macos.json
+"cmd-alt-g m": "git::OpenModifiedFiles",
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+Alt+G M` - Open modified files
+
+### Review Mode
+
+<CodeGroup>
+```rust keymaps/default-macos.json
+"cmd-alt-g r": "git::ReviewDiff",
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+Alt+G R` - Review diff
+
+## Diff Review Comments
+
+Zed supports code review with diff comments.
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Stores the diff review comment locally (for later batch submission).
+SubmitDiffReviewComment,
+/// Toggles the expanded state of the comments section in the overlay.
+ToggleReviewCommentsExpanded,
+/// Sends all stored review comments to the Agent panel.
+SendReviewToAgent,
+
+/// Edits a stored review comment inline.
+pub struct EditReviewComment {
+    pub id: usize,
+}
+
+/// Deletes a stored review comment.
+pub struct DeleteReviewComment {
+    pub id: usize,
+}
+
+/// Confirms an inline edit of a review comment.
+pub struct ConfirmEditReviewComment {
+    pub id: usize,
+}
+
+/// Cancels an inline edit of a review comment.
+pub struct CancelEditReviewComment {
+    pub id: usize,
+}
+```
+</CodeGroup>
+
+## Repository Operations
+
+### Commit Parsing
+
+<CodeGroup>
+```rust git/src/repository.rs
+fn parse_cat_file_commit(sha: Oid, content: &str) -> Option<GraphCommitData> {
+    let mut parents = SmallVec::new();
+    let mut author_name = SharedString::default();
+    let mut author_email = SharedString::default();
+    let mut commit_timestamp = 0i64;
+    let mut in_headers = true;
+    let mut subject = None;
+
+    for line in content.lines() {
+        if in_headers {
+            if line.is_empty() {
+                in_headers = false;
+                continue;
+            }
+
+            if let Some(parent_sha) = line.strip_prefix("parent ") {
+                if let Ok(oid) = Oid::from_str(parent_sha.trim()) {
+                    parents.push(oid);
+                }
+            } else if let Some(author_line) = line.strip_prefix("author ") {
+                // Parse author information
+            }
+        } else if subject.is_none() {
+            subject = Some(SharedString::from(line.to_string()));
+        }
+    }
+
+    Some(GraphCommitData {
+        sha,
+        parents,
+        author_name,
+        author_email,
+        commit_timestamp,
+        subject: subject.unwrap_or_default(),
+    })
+}
+```
+</CodeGroup>
+
+### Commit Data Reader
+
+<CodeGroup>
+```rust git/src/repository.rs
+pub struct CommitDataReader {
+    request_tx: smol::channel::Sender<CommitDataRequest>,
+    _task: Task<()>,
+}
+
+impl CommitDataReader {
+    pub async fn read(&self, sha: Oid) -> Result<GraphCommitData> {
+        let (response_tx, response_rx) = oneshot::channel();
+        self.request_tx
+            .send(CommitDataRequest { sha, response_tx })
+            .await
+            .map_err(|_| anyhow!("commit data reader task closed"))?;
+        response_rx
+            .await
+            .map_err(|_| anyhow!("commit data reader task dropped response"))?
+    }
+}
+```
+</CodeGroup>
+
+## Git Stash
+
+<CodeGroup>
+```rust git/src/stash.rs
+pub struct GitStash {
+    // Stash operations
+}
+```
+</CodeGroup>
+
+Manage stashed changes:
+- Create stashes
+- Apply stashes
+- Drop stashes
+- List stashes
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Editing" icon="pen" href="/features/editing">
+    Code editing with diff integration
+  </Card>
+  <Card title="Navigation" icon="compass" href="/features/navigation">
+    Navigate through code and changes
+  </Card>
+</CardGroup>

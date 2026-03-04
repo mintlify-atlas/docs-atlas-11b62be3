@@ -1,0 +1,503 @@
+---
+title: CLI Options Reference
+description: Complete reference for all Zed CLI flags and options, including workspace management, debugging, and platform-specific features.
+---
+
+# CLI Options Reference
+
+Complete reference for all command-line options supported by the Zed CLI.
+
+## Synopsis
+
+```sh
+zed [OPTIONS] [PATHS]...
+```
+
+## Options
+
+### `-w`, `--wait`
+
+Wait for all opened paths to be closed before exiting.
+
+**Behavior:**
+
+- For files: waits until all specified files are closed in Zed
+- For directories: waits until the created window is closed
+- Exit code reflects the success of the editing session
+
+**Usage:**
+
+```sh
+zed --wait commit-message.txt
+zed -w file1.txt file2.txt
+```
+
+**Common use case:**
+
+```sh
+export EDITOR="zed --wait"
+git commit  # Blocks until you save and close
+```
+
+### `-a`, `--add`
+
+Add files to the currently open workspace.
+
+**Behavior:**
+
+- Opens paths in the currently focused window
+- Does not create a new window
+- If no window is focused, behavior is undefined
+
+**Conflicts with:**
+
+- `--new` (mutually exclusive)
+- `--reuse` (mutually exclusive)
+
+When multiple conflicting flags are specified, the last one takes precedence.
+
+**Usage:**
+
+```sh
+zed --add newfile.txt
+zed -a src/module.rs
+```
+
+### `-n`, `--new`
+
+Create a new workspace window.
+
+**Behavior:**
+
+- Always opens paths in a new window
+- Works even if the paths are already open in another window
+- Useful for working on the same project in multiple windows
+
+**Conflicts with:**
+
+- `--add` (mutually exclusive)
+- `--reuse` (mutually exclusive)
+
+**Usage:**
+
+```sh
+zed --new ~/projects/myproject
+zed -n file.txt
+```
+
+### `-r`, `--reuse`
+
+Reuse an existing window, replacing its workspace.
+
+**Behavior:**
+
+- Closes the current workspace in the active window
+- Opens the new paths in the same window
+- Preserves window position and size
+
+**Conflicts with:**
+
+- `--add` (mutually exclusive)
+- `--new` (mutually exclusive)
+
+**Usage:**
+
+```sh
+zed --reuse ~/projects/different-project
+zed -r .
+```
+
+### `--diff <OLD_PATH> <NEW_PATH>`
+
+Open a diff view comparing two files or directories.
+
+**Syntax:**
+
+```sh
+zed --diff <OLD_PATH> <NEW_PATH>
+```
+
+**Arguments:**
+
+- **OLD_PATH**: The original or "before" file/directory
+- **NEW_PATH**: The modified or "after" file/directory
+
+**Can be specified multiple times:**
+
+```sh
+zed --diff file1.txt file2.txt --diff file3.txt file4.txt
+```
+
+**Directory support:**
+
+When both paths are directories, Zed recursively compares all files and shows
+changed files in a multi-diff view.
+
+**Usage:**
+
+```sh
+zed --diff old.txt new.txt
+zed --diff old-version/ new-version/
+```
+
+See [Diff Command](./diff.mdx) for detailed documentation.
+
+### `--foreground`
+
+Run Zed in the foreground, keeping the terminal attached.
+
+**Behavior:**
+
+- Zed runs as a foreground process
+- Terminal remains attached and shows log output
+- Pressing Ctrl+C terminates Zed
+
+**Useful for:**
+
+- Debugging startup issues
+- Viewing real-time logs
+- Running Zed in controlled environments (e.g., containers)
+
+**Usage:**
+
+```sh
+zed --foreground
+zed --foreground myfile.txt
+```
+
+### `--user-data-dir <DIR>`
+
+Set a custom directory for all user data.
+
+**Overrides default locations:**
+
+- **macOS:** `~/Library/Application Support/Zed`
+- **Linux:** `$XDG_DATA_HOME/zed` (typically `~/.local/share/zed`)
+- **Windows:** `%LOCALAPPDATA%\Zed`
+
+**User data includes:**
+
+- Database
+- Extensions
+- Logs
+- Settings
+- Themes
+
+**Usage:**
+
+```sh
+zed --user-data-dir ~/.zed-custom
+zed --user-data-dir /tmp/zed-test myfile.txt
+```
+
+**Use cases:**
+
+- Testing with isolated settings
+- Running multiple independent Zed configurations
+- Using Zed in a portable setup
+
+### `-v`, `--version`
+
+Print Zed's version information and exit.
+
+**Output includes:**
+
+- Release channel (stable, preview, nightly, or dev)
+- Version number
+- Commit SHA (if available)
+- Full path to the Zed binary
+
+**Usage:**
+
+```sh
+zed --version
+zed -v
+```
+
+**Example output:**
+
+```
+Zed preview 0.165.0 abc123def – /Applications/Zed Preview.app/Contents/MacOS/zed
+```
+
+### `--zed <PATH>`
+
+Specify a custom path to the Zed application or binary.
+
+**Usage:**
+
+```sh
+zed --zed /path/to/Zed.app myfile.txt
+zed --zed ~/builds/zed/target/debug/zed .
+```
+
+**Platform-specific paths:**
+
+- **macOS:** Path to `.app` bundle or binary inside `Contents/MacOS/`
+- **Linux:** Path to `zed` or `zed-editor` binary
+- **Windows:** Path to `zed.exe` or `Zed.exe`
+
+**Use cases:**
+
+- Using a development build
+- Running a specific Zed version
+- Testing changes before installation
+
+### `--uninstall`
+
+Uninstall Zed from the system (macOS and Linux only).
+
+**Behavior:**
+
+- Removes the Zed application
+- Deletes user data (database, extensions, logs)
+- Removes configuration files
+- Uninstalls the CLI
+
+**Platform availability:**
+
+- **macOS:** ✓ Available
+- **Linux:** ✓ Available
+- **Windows:** ✗ Not available
+
+**Usage:**
+
+```sh
+zed --uninstall
+```
+
+**Note:** This runs an uninstall script bundled with Zed. It respects the
+current release channel (stable, preview, or nightly).
+
+### `--system-specs`
+
+Attempting to use this flag with the CLI produces an error.
+
+**Error message:**
+
+```
+The `--system-specs` argument is not supported in the Zed CLI, only on Zed binary.
+To retrieve the system specs on the command line, run the following command:
+/path/to/Zed --system-specs
+```
+
+**Correct usage:**
+
+Run the Zed binary directly with `--system-specs` instead of using the CLI
+wrapper.
+
+**macOS:**
+
+```sh
+/Applications/Zed.app/Contents/MacOS/zed --system-specs
+```
+
+**Linux:**
+
+```sh
+/usr/local/bin/zed-editor --system-specs
+```
+
+### `--wsl <USER@DISTRO>` (Windows only)
+
+Specify the WSL username and distribution for opening paths.
+
+**Format:**
+
+- With username: `USER@DISTRO`
+- Without username: `DISTRO` (uses default user)
+
+**Examples:**
+
+```sh
+zed --wsl me@Ubuntu myfile.txt
+zed --wsl Ubuntu myfile.txt
+```
+
+**Warning:** This flag is used internally by Zed when launching from WSL. You
+should not set it manually. The CLI automatically detects WSL environments and
+handles path conversion.
+
+### `--dev-server-token <TOKEN>`
+
+This flag is no longer supported.
+
+**Error message:**
+
+```
+Dev servers were removed in v0.157.x please upgrade to SSH remoting: https://zed.dev/docs/remote-development
+```
+
+**Migration:** Use SSH remoting instead. See the [Remote
+Development](https://zed.dev/docs/remote-development) documentation.
+
+## Positional Arguments
+
+### `[PATHS]...`
+
+Paths to files, directories, or URLs to open.
+
+**Supported formats:**
+
+- File paths: `myfile.txt`, `/home/user/file.txt`
+- Directory paths: `.`, `~/projects/myproject`
+- Paths with positioning: `file.txt:42`, `file.txt:42:10`
+- URLs: `zed://settings`, `https://example.com`
+- Standard input: `-` (must be the only path)
+
+**Multiple paths:**
+
+```sh
+zed file1.txt file2.txt ~/projects/myproject
+```
+
+**Path processing:**
+
+- Relative paths are resolved against the current working directory
+- Paths are canonicalized to absolute paths
+- Non-existent paths are handled gracefully
+- Symlinks are resolved (on Unix systems)
+
+## macOS-Specific Options
+
+### Release Channel Selectors
+
+On macOS, you can launch a specific release channel by using the channel name
+as a flag:
+
+```sh
+zed --stable myfile.txt
+zed --preview myfile.txt
+zed --nightly myfile.txt
+```
+
+**Behavior:**
+
+When the first argument is a release channel name (prefixed with `--`), the CLI
+spawns the corresponding Zed version with the remaining arguments.
+
+**Requirements:**
+
+- The specified channel must be installed
+- The channel name must be the first argument
+- Available channels: `stable`, `preview`, `nightly`
+
+**Example:**
+
+```sh
+zed --preview --wait myfile.txt  # Opens Zed Preview and waits
+```
+
+## Platform-Specific Behavior
+
+### macOS
+
+- CLI uses `LSOpenFromURLSpec` to launch the app bundle
+- Supports `.app` bundles and raw binaries
+- Version information read from `Info.plist`
+
+### Linux
+
+- CLI forks a background process to launch Zed
+- Uses Unix domain sockets for IPC
+- Flatpak: CLI can escape the sandbox to run on the host
+
+### Windows
+
+- CLI uses named pipes for IPC
+- Checks for single instance using a mutex
+- WSL integration with automatic path conversion
+
+## Exit Codes
+
+| Code | Meaning                                           |
+| ---- | ------------------------------------------------- |
+| `0`  | Success                                           |
+| `1`  | Error (details printed to stderr)                 |
+| `1`  | Bundle detection failed                           |
+| `1`  | IPC handshake failed                              |
+| `1`  | Unsupported flag used (e.g., `--system-specs`)    |
+| `1`  | Uninstall script failed                           |
+| `1`  | Dev server token provided (no longer supported)   |
+| `N`  | Custom exit code from `--wait` (reflects editing) |
+
+When using `--wait`, the exit code reflects the success of the editing session
+as determined by Zed.
+
+## Environment Variables
+
+### `EDITOR`
+
+Set Zed as the default editor:
+
+```sh
+export EDITOR="zed --wait"
+```
+
+### `VISUAL`
+
+Set Zed as the visual editor:
+
+```sh
+export VISUAL="zed --wait"
+```
+
+### `ZED_UPDATE_EXPLANATION` (Internal)
+
+Used internally to customize update messages (e.g., for Flatpak installations).
+
+### `FORCE_CLI_MODE_ENV_VAR_NAME` (Internal)
+
+Used internally to force CLI mode when launching Zed.
+
+### `XDG_DATA_HOME` (Linux)
+
+Controls the default location for user data on Linux. If not set, defaults to
+`~/.local/share`.
+
+## Examples
+
+### Basic Usage
+
+```sh
+zed myfile.txt
+zed ~/projects/myproject
+zed file1.txt file2.txt file3.txt
+```
+
+### With Options
+
+```sh
+zed --wait commit.txt
+zed --new ~/projects/myproject
+zed --add src/module.rs
+zed --diff old.txt new.txt
+```
+
+### Complex Commands
+
+```sh
+zed --wait --new --user-data-dir /tmp/zed-test file.txt
+zed --diff old/ new/ --wait
+zed --foreground --zed ~/builds/zed/target/debug/zed
+```
+
+### Integration with Tools
+
+```sh
+# Git editor
+export EDITOR="zed --wait"
+git commit
+
+# Pipe to Zed
+ps aux | grep zed | zed -
+
+# Compare with previous version
+git show HEAD:file.rs > /tmp/old.rs && zed --diff /tmp/old.rs file.rs
+```
+
+## See Also
+
+- [CLI Overview](./overview.mdx) - Introduction and installation
+- [Open Command](./open.mdx) - Detailed documentation on opening files
+- [Diff Command](./diff.mdx) - Detailed documentation on diff mode

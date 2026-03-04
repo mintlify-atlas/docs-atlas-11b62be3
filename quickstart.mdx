@@ -1,80 +1,386 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quick Start
+description: Get started with Zed quickly. Learn essential commands, open your first project, and master the basics of editing and navigation.
 ---
 
-## Get started in three steps
+# Quick Start
 
-Get your documentation site running locally and make your first customization.
+This guide will get you from zero to productive in Zed. You'll learn the essential commands, open your first project, and start editing code.
 
-### Step 1: Set up your local environment
+## Opening Your First Project
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+<Steps>
+  <Step title="Open a Folder">
+    Launch Zed and open a project folder using one of these methods:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    **From the command line:**
+    ```bash
+    zed ~/projects/my-app
+    ```
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    **From within Zed:**
+    - Press `Cmd+O` (macOS) or `Ctrl+O` (Linux/Windows)
+    - Navigate to your project folder
+    - Click "Open"
+  </Step>
+  
+  <Step title="Explore the Interface">
+    When you open a project, you'll see:
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    - **Project Panel** (left): Browse your project files
+    - **Editor** (center): Edit your code
+    - **Assistant Panel** (right): AI chat and tools (can be toggled)
+    - **Status Bar** (bottom): Git status, diagnostics, and language info
+  </Step>
+  
+  <Step title="Open a File">
+    Use `Cmd+P` (macOS) or `Ctrl+P` (Linux/Windows) to open the file picker. Start typing a filename and press Enter to open it.
+  </Step>
+</Steps>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+## Essential Keyboard Shortcuts
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+These are the most important shortcuts to memorize:
 
-### Step 3: Go live
+### Navigation
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+| Action              | macOS         | Linux/Windows  | Description                           |
+| ------------------- | ------------- | -------------- | ------------------------------------- |
+| **Command Palette** | `Cmd+Shift+P` | `Ctrl+Shift+P` | Access all commands                   |
+| **Go to File**      | `Cmd+P`       | `Ctrl+P`       | Quickly open files by name            |
+| **Go to Symbol**    | `Cmd+Shift+O` | `Ctrl+Shift+O` | Jump to functions, classes, etc.      |
+| **Find in Project** | `Cmd+Shift+F` | `Ctrl+Shift+F` | Search across all files               |
+| **Go to Line**      | `Ctrl+G`      | `Ctrl+G`       | Jump to a specific line number        |
 
-## Next steps
+### Editing
 
-Now that you have your docs running, explore these key features:
+| Action                | macOS     | Linux/Windows | Description                        |
+| --------------------- | --------- | ------------- | ---------------------------------- |
+| **Multi-cursor**      | `Cmd+D`   | `Ctrl+D`      | Select next occurrence             |
+| **Add cursor above**  | `Cmd+Alt+Up` | `Ctrl+Alt+Up` | Add cursor on line above        |
+| **Add cursor below**  | `Cmd+Alt+Down` | `Ctrl+Alt+Down` | Add cursor on line below      |
+| **Comment line**      | `Cmd+/`   | `Ctrl+/`      | Toggle line comment                |
+| **Format document**   | `Cmd+Shift+I` | `Ctrl+Shift+I` | Format code using language formatter |
 
-<CardGroup cols={2}>
+### Tools
 
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+| Action              | macOS         | Linux/Windows  | Description                  |
+| ------------------- | ------------- | -------------- | ---------------------------- |
+| **Toggle Terminal** | `` Ctrl+` ``  | `` Ctrl+` ``   | Open/close integrated terminal |
+| **Open Settings**   | `Cmd+,`       | `Ctrl+,`       | Open settings editor         |
+| **Agent Panel**     | `Cmd+Shift+A` | `Ctrl+Shift+A` | Open AI assistant            |
+| **Extensions**      | `Cmd+Shift+X` | `Ctrl+Shift+X` | Browse and install extensions |
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+Forgot a shortcut? Press `Cmd+Shift+P` (or `Ctrl+Shift+P`) to open the command palette and search for any command.
 </Note>
+
+## Using the Command Line Interface
+
+The Zed CLI lets you open files and projects from your terminal.
+
+### Opening Files and Folders
+
+```bash
+# Open current directory
+zed .
+
+# Open a specific file
+zed README.md
+
+# Open multiple files
+zed src/main.rs src/lib.rs
+
+# Open file at specific line
+zed main.rs:42
+
+# Open file at line and column
+zed main.rs:42:10
+```
+
+### Common CLI Options
+
+<CodeGroup>
+```bash Wait for File to Close
+zed --wait README.md
+# Useful for git commit messages
+export EDITOR="zed --wait"
+```
+
+```bash Open in New Window
+zed --new ~/projects/another-project
+```
+
+```bash Add to Current Window
+zed --add newfile.txt
+```
+
+```bash Compare Files
+zed --diff old.txt new.txt
+```
+</CodeGroup>
+
+See the full [CLI Reference](https://zed.dev/docs/reference/cli) for all available options.
+
+## Your First Editing Session
+
+Let's practice the essential editing features:
+
+### 1. Multi-cursor Editing
+
+<Steps>
+  <Step title="Select a word">
+    Double-click a word to select it.
+  </Step>
+  
+  <Step title="Select next occurrence">
+    Press `Cmd+D` (macOS) or `Ctrl+D` (Linux/Windows) to select the next occurrence of the same word.
+  </Step>
+  
+  <Step title="Edit all at once">
+    Start typing to edit all selected occurrences simultaneously.
+  </Step>
+</Steps>
+
+### 2. Go to Definition
+
+<Steps>
+  <Step title="Place cursor on a symbol">
+    Click on a function, variable, or class name.
+  </Step>
+  
+  <Step title="Jump to definition">
+    Press `F12` or right-click and select "Go to Definition".
+  </Step>
+  
+  <Step title="Go back">
+    Press `Ctrl+-` (macOS) or `Alt+Left` (Linux/Windows) to return to your previous location.
+  </Step>
+</Steps>
+
+### 3. Find and Replace
+
+```bash
+# Find in current file
+Cmd+F (macOS) or Ctrl+F (Linux/Windows)
+
+# Find and replace in current file
+Cmd+H (macOS) or Ctrl+H (Linux/Windows)
+
+# Find in entire project
+Cmd+Shift+F (macOS) or Ctrl+Shift+F (Linux/Windows)
+```
+
+### 4. Using the Integrated Terminal
+
+<Steps>
+  <Step title="Open terminal">
+    Press `` Ctrl+` `` to open the integrated terminal.
+  </Step>
+  
+  <Step title="Run commands">
+    The terminal starts in your project directory. Run any command:
+    
+    ```bash
+    npm install
+    cargo build
+    python manage.py runserver
+    ```
+  </Step>
+  
+  <Step title="Create additional terminals">
+    Click the `+` icon in the terminal panel to open multiple terminal sessions.
+  </Step>
+</Steps>
+
+## Setting Up Your Language
+
+Zed includes built-in support for many languages. For others, you'll need to install an extension.
+
+<Steps>
+  <Step title="Open Extensions">
+    Press `Cmd+Shift+X` (macOS) or `Ctrl+Shift+X` (Linux/Windows).
+  </Step>
+  
+  <Step title="Search for your language">
+    Type the name of your programming language (e.g., "Python", "Go", "Rust").
+  </Step>
+  
+  <Step title="Install the extension">
+    Click "Install" next to the language extension.
+  </Step>
+  
+  <Step title="Verify language support">
+    Open a file in that language and check that syntax highlighting and code intelligence work.
+  </Step>
+</Steps>
+
+<Note>
+Some languages require additional tools (like language servers) to be installed on your system. Check the [Languages](https://zed.dev/docs/languages) documentation for language-specific setup instructions.
+</Note>
+
+## Configuring Zed
+
+Customize Zed to match your preferences:
+
+### Open Settings
+
+Press `Cmd+,` (macOS) or `Ctrl+,` (Linux/Windows) to open the Settings Editor. You can search for any setting and change it directly.
+
+### Common Settings to Configure
+
+<CodeGroup>
+```json Theme
+{
+  "theme": "Gruvbox Dark",
+  "ui_font_size": 16,
+  "buffer_font_size": 14
+}
+```
+
+```json Font
+{
+  "buffer_font_family": "Fira Code",
+  "buffer_font_features": {
+    "calt": true
+  }
+}
+```
+
+```json Format on Save
+{
+  "format_on_save": "on",
+  "formatter": "language_server"
+}
+```
+
+```json Vim Mode
+{
+  "vim_mode": true
+}
+```
+</CodeGroup>
+
+### Quick Theme Switching
+
+Press `Cmd+K Cmd+T` (macOS) or `Ctrl+K Ctrl+T` (Linux/Windows) to open the theme picker and preview themes instantly.
+
+## Trying AI Features
+
+Zed includes built-in AI assistance to help you code faster.
+
+### Agent Panel (AI Chat)
+
+<Steps>
+  <Step title="Open Agent Panel">
+    Press `Cmd+Shift+A` (macOS) or `Ctrl+Shift+A` (Linux/Windows).
+  </Step>
+  
+  <Step title="Ask a question">
+    Type a question or request:
+    - "How do I read a file in Python?"
+    - "Explain this function"
+    - "Write a test for this code"
+  </Step>
+  
+  <Step title="Include context">
+    Select code in your editor before opening the panel to automatically include it as context.
+  </Step>
+</Steps>
+
+### Inline Assistant
+
+<Steps>
+  <Step title="Select code">
+    Highlight the code you want to modify.
+  </Step>
+  
+  <Step title="Invoke assistant">
+    Press `Cmd+Enter` (macOS) or `Ctrl+Enter` (Linux/Windows).
+  </Step>
+  
+  <Step title="Give instructions">
+    Type what you want to do:
+    - "Add error handling"
+    - "Convert to async/await"
+    - "Add comments"
+  </Step>
+</Steps>
+
+<Note>
+AI features require configuration of an LLM provider. See the [AI Configuration](https://zed.dev/docs/ai/configuration) guide to set up Claude, GPT-4, Gemini, or other providers.
+</Note>
+
+## Working with Git
+
+Zed has built-in Git integration:
+
+### View Changes
+
+- **Gutter indicators**: Modified lines show in the editor gutter
+- **Git Panel**: Press `Cmd+Shift+G` (macOS) or `Ctrl+Shift+G` (Linux/Windows)
+- **Inline blame**: See who changed each line
+
+### Stage and Commit
+
+<Steps>
+  <Step title="Open Git panel">
+    Press `Cmd+Shift+G` (macOS) or `Ctrl+Shift+G` (Linux/Windows).
+  </Step>
+  
+  <Step title="Stage changes">
+    Click files to stage them, or click "Stage All".
+  </Step>
+  
+  <Step title="Write commit message">
+    Type your commit message in the text box.
+  </Step>
+  
+  <Step title="Commit">
+    Press `Cmd+Enter` (macOS) or `Ctrl+Enter` (Linux/Windows) to commit.
+  </Step>
+</Steps>
+
+### View Diffs
+
+Click on a modified file in the Git panel to see a side-by-side diff.
+
+## Next Steps
+
+You now know the essentials of Zed! Here are some topics to explore next:
+
+<CardGroup cols={2}>
+  <Card title="Languages" icon="code" href="https://zed.dev/docs/languages">
+    Configure language-specific features and tools
+  </Card>
+  
+  <Card title="AI Features" icon="sparkles" href="https://zed.dev/docs/ai/overview">
+    Learn about Zed's AI capabilities in depth
+  </Card>
+  
+  <Card title="Collaboration" icon="users" href="https://zed.dev/docs/collaboration">
+    Share your project and code with teammates in real-time
+  </Card>
+  
+  <Card title="Extensions" icon="puzzle-piece" href="https://zed.dev/docs/extensions">
+    Extend Zed with community-built extensions
+  </Card>
+</CardGroup>
+
+## Coming from Another Editor?
+
+If you're switching from another editor, check out our migration guides:
+
+- [VS Code](https://zed.dev/docs/migrate/vs-code) — Import settings and map keybindings
+- [IntelliJ IDEA](https://zed.dev/docs/migrate/intellij) — Adapt to Zed's navigation
+- [PyCharm](https://zed.dev/docs/migrate/pycharm) — Set up Python development
+- [WebStorm](https://zed.dev/docs/migrate/webstorm) — Configure JS/TS workflows
+- [RustRover](https://zed.dev/docs/migrate/rustrover) — Rust development in Zed
+
+## Join the Community
+
+Connect with other Zed users:
+
+- [Discord](https://discord.com/invite/zedindustries) — Chat with the community
+- [GitHub Discussions](https://github.com/zed-industries/zed/discussions) — Ask questions and share ideas
+- [Reddit](https://www.reddit.com/r/ZedEditor) — News and discussions

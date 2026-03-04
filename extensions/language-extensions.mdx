@@ -1,0 +1,700 @@
+---
+title: Language Extensions
+description: Add programming language support to Zed with Tree-sitter grammars and language servers
+---
+
+# Language Extensions
+
+Language extensions add support for programming languages in Zed. A complete language extension includes:
+
+- **Language metadata**: File extensions, comment syntax, indentation
+- **Tree-sitter grammar**: Syntax parsing
+- **Tree-sitter queries**: Highlighting, brackets, outline, indentation
+- **Language server**: IDE features (autocomplete, diagnostics, go-to-definition)
+
+## Language Metadata
+
+Each language requires a configuration directory under `languages/` in your extension:
+
+```
+my-extension/
+  languages/
+    mylang/
+      config.toml
+      highlights.scm
+      brackets.scm
+      outline.scm
+      indents.scm
+```
+
+### config.toml
+
+The `config.toml` file defines language properties:
+
+```toml
+name = "MyLang"
+grammar = "mylang"
+path_suffixes = ["myl", "mylang"]
+line_comments = ["# "]
+block_comment = { start = "/*", end = "*/" }
+tab_size = 4
+hard_tabs = false
+first_line_pattern = '^#!/.*\bmylang\b'
+```
+
+**Required fields**:
+- `name`: Human-readable name shown in the language selector
+- `grammar`: Name of the Tree-sitter grammar (defined in `extension.toml`)
+
+**Optional fields**:
+- `path_suffixes`: File extensions (without dots). Use settings for glob patterns
+- `line_comments`: Array of line comment prefixes
+- `block_comment`: Start and end strings for block comments
+  - `start`: Opening delimiter
+  - `end`: Closing delimiter
+  - `prefix`: Prefix for middle lines (optional)
+  - `tab_size`: Additional indentation for middle lines
+- `tab_size`: Spaces per indentation level (default: 4)
+- `hard_tabs`: Use tab characters instead of spaces (default: false)
+- `first_line_pattern`: Regex to match files by first line (e.g., shebangs)
+- `brackets`: Custom bracket pairs (for auto-closing)
+- `debuggers`: Array of debug adapter names (for launch UI ordering)
+
+**Example: Bracket Configuration**
+
+```toml
+[[brackets]]
+start = "{"
+end = "}"
+close = true
+newline = true
+
+[[brackets]]
+start = "["
+end = "]"
+close = true
+newline = true
+not_in = ["comment", "string"]
+```
+
+## Tree-sitter Grammar
+
+Tree-sitter provides fast, incremental parsing. Register grammars in `extension.toml`:
+
+```toml
+[grammars.mylang]
+repository = "https://github.com/username/tree-sitter-mylang"
+commit = "abc123def456789..."  # Full commit SHA
+```
+
+**Fields**:
+- `repository`: Git repository URL (HTTPS or `file://` for local development)
+- `commit` (or `rev`): Git commit SHA to use
+- `path`: Subdirectory if grammar is not at repository root (optional)
+
+**Local Development**:
+
+```toml
+[grammars.mylang]
+repository = "file:///absolute/path/to/tree-sitter-mylang"
+commit = "HEAD"
+```
+
+An extension can provide multiple grammars by adding multiple `[grammars.name]` sections.
+
+## Tree-sitter Queries
+
+Tree-sitter queries enable language features by matching patterns in the syntax tree. All queries use [Tree-sitter query syntax](https://tree-sitter.github.io/tree-sitter/using-parsers/queries/index.html).
+
+### Syntax Highlighting (highlights.scm)
+
+The `highlights.scm` file defines syntax highlighting rules.
+
+**Example**:
+
+```scheme
+(comment) @comment
+
+(string) @string
+(number) @number
+(boolean) @boolean
+
+(function_definition
+  name: (identifier) @function)
+
+(call_expression
+  function: (identifier) @function)
+
+(type_identifier) @type
+(field_identifier) @property
+
+[
+  "if" "else" "for" "while" "return"
+] @keyword
+
+[
+  "+" "-" "*" "/" "=" "==" "!="
+] @operator
+```
+
+**Available Captures**:
+
+| Capture | Usage |
+|---------|-------|
+| `@attribute` | Attributes and decorators |
+| `@boolean` | Boolean literals |
+| `@comment` | Comments |
+| `@comment.doc` | Documentation comments |
+| `@constant` | Constants |
+| `@constant.builtin` | Built-in constants |
+| `@constructor` | Constructor calls |
+| `@embedded` | Embedded code |
+| `@emphasis` | Italic text |
+| `@emphasis.strong` | Bold text |
+| `@enum` | Enum names |
+| `@function` | Function names and calls |
+| `@keyword` | Language keywords |
+| `@label` | Labels and symbols |
+| `@link_uri` | URLs |
+| `@number` | Numeric literals |
+| `@operator` | Operators |
+| `@property` | Object properties and fields |
+| `@punctuation` | General punctuation |
+| `@punctuation.bracket` | Brackets: `()`, `[]`, `{}` |
+| `@punctuation.delimiter` | Delimiters: `,`, `;`, `:` |
+| `@string` | String literals |
+| `@string.escape` | Escape sequences |
+| `@string.regex` | Regular expressions |
+| `@string.special` | Special string types |
+| `@tag` | XML/HTML tags |
+| `@title` | Headings and titles |
+| `@type` | Type names |
+| `@type.builtin` | Built-in types |
+| `@variable` | Variables |
+| `@variable.special` | Special variables (e.g., `self`, `this`) |
+| `@variable.parameter` | Function parameters |
+
+### Bracket Matching (brackets.scm)
+
+The `brackets.scm` file defines matching bracket pairs.
+
+**Example**:
+
+```scheme
+("(" @open ")" @close)
+("[" @open "]" @close)
+("{" @open "}" @close)
+("\"" @open "\"" @close)
+```
+
+Zed uses these for:
+- Rainbow bracket coloring (each nested pair gets a different color)
+- Highlighting matching brackets when cursor is between them
+- Bracket-aware navigation
+
+**Disable Rainbow Brackets**:
+
+```scheme
+(("\"" @open "\"" @close) (#set! rainbow.exclude))
+```
+
+### Code Outline (outline.scm)
+
+The `outline.scm` file defines the document outline structure.
+
+**Example**:
+
+```scheme
+(function_definition
+  name: (identifier) @name) @item
+
+(class_definition
+  name: (identifier) @name) @item
+
+(method_definition
+  name: (identifier) @name) @item
+
+(interface_definition
+  name: (identifier) @name
+  body: (_) @context) @item
+```
+
+**Captures**:
+- `@name`: The symbol name (shown in outline)
+- `@item`: The entire declaration (for navigation)
+- `@context`: Additional context for the item
+- `@context.extra`: Secondary context information
+- `@annotation`: Decorators, doc comments (used by AI for code generation)
+
+### Auto-indentation (indents.scm)
+
+The `indents.scm` file defines indentation rules.
+
+**Example**:
+
+```scheme
+(function_definition
+  body: (block "}" @end)) @indent
+
+(if_statement
+  consequence: (block "}" @end)) @indent
+
+(array "]" @end) @indent
+(object "}" @end) @indent
+
+[
+  "("
+  "["
+  "{"
+] @indent
+
+[
+  ")"
+  "]"
+  "}"
+] @outdent
+```
+
+**Captures**:
+- `@indent`: Increase indentation for content inside
+- `@outdent`: Decrease indentation
+- `@end`: Mark the closing bracket for proper alignment
+
+### Code Injections (injections.scm)
+
+The `injections.scm` file enables embedded languages (e.g., SQL in Python strings).
+
+**Example: Markdown with code blocks**
+
+```scheme
+(fenced_code_block
+  (info_string
+    (language) @injection.language)
+  (code_fence_content) @injection.content)
+
+((inline) @content
+ (#set! injection.language "markdown-inline"))
+```
+
+**Example: Template strings in JavaScript**
+
+```scheme
+((template_string) @injection.content
+ (#set! injection.language "html")
+ (#match? @injection.content "<[a-zA-Z]"))
+```
+
+**Captures**:
+- `@injection.language`: Language identifier for the embedded content
+- `@injection.content`: The embedded code to parse
+
+### Syntax Overrides (overrides.scm)
+
+The `overrides.scm` file defines scopes where editor settings change.
+
+**Example: Different word characters in strings**
+
+```scheme
+[
+  (string)
+  (template_string)
+] @string
+```
+
+Then configure in `config.toml`:
+
+```toml
+[overrides.string]
+word_characters = "-_$#"
+completion_query_characters = "-"
+```
+
+This allows double-clicking to select hyphenated words inside strings, and triggers autocomplete after typing `-`.
+
+### Runnables (runnables.scm)
+
+The `runnables.scm` file marks code that can be executed (e.g., unit tests).
+
+**Example**:
+
+```scheme
+(function_definition
+  (decorator
+    (identifier) @_decorator
+    (#eq? @_decorator "test"))
+  name: (identifier) @run) @_test
+
+(call_expression
+  function: (attribute
+    object: (identifier) @_module
+    attribute: (identifier) @_function)
+  (#eq? @_module "describe")
+  (#eq? @_function "it")
+  arguments: (argument_list
+    (string) @run)) @_test
+```
+
+Runnables show a "▶ Run" indicator in the gutter.
+
+## Language Server
+
+Language servers provide IDE features via the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
+
+### Declaring Language Servers
+
+Register language servers in `extension.toml`:
+
+```toml
+[language_servers.mylang-lsp]
+name = "MyLang Language Server"
+language = "MyLang"
+
+[language_servers.mylang-lsp.language_ids]
+"MyLang" = "mylang"
+```
+
+**For multiple languages**:
+
+```toml
+[language_servers.html-lsp]
+name = "HTML Language Server"
+languages = ["HTML", "CSS"]
+
+[language_servers.html-lsp.language_ids]
+"HTML" = "html"
+"CSS" = "css"
+```
+
+### Providing Language Server Command
+
+Implement the `language_server_command` method:
+
+```rust
+use zed_extension_api::{self as zed, LanguageServerId, Result};
+use std::fs;
+
+struct MyExtension {
+    cached_binary_path: Option<String>,
+}
+
+impl zed::Extension for MyExtension {
+    fn new() -> Self {
+        Self {
+            cached_binary_path: None,
+        }
+    }
+
+    fn language_server_command(
+        &mut self,
+        language_server_id: &LanguageServerId,
+        worktree: &zed::Worktree,
+    ) -> Result<zed::Command> {
+        // Check if language server is in PATH
+        if let Some(path) = worktree.which("mylang-lsp") {
+            return Ok(zed::Command {
+                command: path,
+                args: vec!["--stdio".to_string()],
+                env: Default::default(),
+            });
+        }
+
+        // Check if already downloaded
+        if let Some(path) = &self.cached_binary_path {
+            if fs::metadata(path).map(|m| m.is_file()).unwrap_or(false) {
+                return Ok(zed::Command {
+                    command: path.clone(),
+                    args: vec!["--stdio".to_string()],
+                    env: Default::default(),
+                });
+            }
+        }
+
+        // Download language server
+        let binary_path = self.download_language_server(language_server_id)?;
+        self.cached_binary_path = Some(binary_path.clone());
+
+        Ok(zed::Command {
+            command: binary_path,
+            args: vec!["--stdio".to_string()],
+            env: Default::default(),
+        })
+    }
+}
+```
+
+### Downloading Language Servers
+
+**From GitHub Releases**:
+
+```rust
+fn download_language_server(&self, id: &LanguageServerId) -> Result<String> {
+    zed::set_language_server_installation_status(
+        id,
+        &zed::LanguageServerInstallationStatus::CheckingForUpdate,
+    );
+
+    let release = zed::latest_github_release(
+        "owner/mylang-lsp",
+        zed::GithubReleaseOptions {
+            require_assets: true,
+            pre_release: false,
+        },
+    )?;
+
+    let (os, arch) = zed::current_platform();
+    let asset_name = format!(
+        "mylang-lsp-{}-{}.tar.gz",
+        match os {
+            zed::Os::Mac => "darwin",
+            zed::Os::Linux => "linux",
+            zed::Os::Windows => "windows",
+        },
+        match arch {
+            zed::Architecture::Aarch64 => "aarch64",
+            zed::Architecture::X8664 => "x86_64",
+            zed::Architecture::X86 => "x86",
+        }
+    );
+
+    let asset = release
+        .assets
+        .iter()
+        .find(|a| a.name == asset_name)
+        .ok_or(format!("Asset {} not found", asset_name))?;
+
+    let version_dir = format!("mylang-lsp-{}", release.version);
+    let binary_path = format!("{}/mylang-lsp", version_dir);
+
+    if !fs::metadata(&binary_path).is_ok_and(|m| m.is_file()) {
+        zed::set_language_server_installation_status(
+            id,
+            &zed::LanguageServerInstallationStatus::Downloading,
+        );
+
+        zed::download_file(
+            &asset.download_url,
+            &version_dir,
+            zed::DownloadedFileType::GzipTar,
+        )?;
+
+        zed::make_file_executable(&binary_path)?;
+
+        // Clean up old versions
+        if let Ok(entries) = fs::read_dir(".") {
+            for entry in entries.flatten() {
+                let name = entry.file_name();
+                let name_str = name.to_string_lossy();
+                if name_str.starts_with("mylang-lsp-") && name_str != version_dir {
+                    fs::remove_dir_all(entry.path()).ok();
+                }
+            }
+        }
+    }
+
+    zed::set_language_server_installation_status(
+        id,
+        &zed::LanguageServerInstallationStatus::None,
+    );
+
+    Ok(binary_path)
+}
+```
+
+**From npm**:
+
+```rust
+const SERVER_PATH: &str = "node_modules/.bin/mylang-lsp";
+const PACKAGE_NAME: &str = "mylang-language-server";
+
+fn download_language_server(&self, id: &LanguageServerId) -> Result<String> {
+    if fs::metadata(SERVER_PATH).is_ok_and(|m| m.is_file()) {
+        return Ok(SERVER_PATH.to_string());
+    }
+
+    zed::set_language_server_installation_status(
+        id,
+        &zed::LanguageServerInstallationStatus::CheckingForUpdate,
+    );
+
+    let version = zed::npm_package_latest_version(PACKAGE_NAME)?;
+
+    if zed::npm_package_installed_version(PACKAGE_NAME)?.as_ref() != Some(&version) {
+        zed::set_language_server_installation_status(
+            id,
+            &zed::LanguageServerInstallationStatus::Downloading,
+        );
+        zed::npm_install_package(PACKAGE_NAME, &version)?;
+    }
+
+    zed::set_language_server_installation_status(
+        id,
+        &zed::LanguageServerInstallationStatus::None,
+    );
+
+    Ok(SERVER_PATH.to_string())
+}
+
+// For npm-based servers, return node command
+fn language_server_command(
+    &mut self,
+    language_server_id: &LanguageServerId,
+    worktree: &zed::Worktree,
+) -> Result<zed::Command> {
+    let server_path = self.download_language_server(language_server_id)?;
+    
+    Ok(zed::Command {
+        command: zed::node_binary_path()?,
+        args: vec![server_path, "--stdio".to_string()],
+        env: Default::default(),
+    })
+}
+```
+
+### Language Server Configuration
+
+**Initialization Options**:
+
+```rust
+fn language_server_initialization_options(
+    &mut self,
+    _language_server_id: &LanguageServerId,
+    _worktree: &zed::Worktree,
+) -> Result<Option<serde_json::Value>> {
+    Ok(Some(serde_json::json!({
+        "provideFormatter": true,
+        "embeddedLanguages": {
+            "css": true,
+            "javascript": true
+        }
+    })))
+}
+```
+
+**Workspace Configuration**:
+
+```rust
+use zed::settings::LspSettings;
+
+fn language_server_workspace_configuration(
+    &mut self,
+    server_id: &LanguageServerId,
+    worktree: &zed::Worktree,
+) -> Result<Option<serde_json::Value>> {
+    let settings = LspSettings::for_worktree(server_id.as_ref(), worktree)
+        .ok()
+        .and_then(|lsp_settings| lsp_settings.settings)
+        .unwrap_or_default();
+    Ok(Some(settings))
+}
+```
+
+This reads LSP settings from the user's `settings.json`:
+
+```json
+{
+  "lsp": {
+    "mylang-lsp": {
+      "settings": {
+        "mylang": {
+          "trace": "verbose"
+        }
+      }
+    }
+  }
+}
+```
+
+### Custom Completions
+
+Customize completion labels for better display:
+
+```rust
+use zed::lsp::{Completion, CompletionKind};
+use zed::{CodeLabel, CodeLabelSpan};
+
+fn label_for_completion(
+    &self,
+    _language_server_id: &LanguageServerId,
+    completion: Completion,
+) -> Option<CodeLabel> {
+    let name = &completion.label;
+    let detail = completion.detail?;
+    
+    // Create a label like: "let x: Type = name()"
+    let code = format!("let x: {} = {}()", detail, name);
+    
+    Some(CodeLabel {
+        spans: vec![
+            // Highlight the name
+            CodeLabelSpan::code_range({
+                let start = code.find(name)?;
+                start..start + name.len()
+            }),
+            // Highlight the type
+            CodeLabelSpan::code_range({
+                let start = code.find(&detail)?;
+                start..start + detail.len()
+            }),
+        ],
+        filter_range: (0..name.len()).into(),
+        code,
+    })
+}
+```
+
+## Example: Complete Language Extension
+
+Here's a complete example structure:
+
+**Directory structure**:
+```
+mylang-extension/
+  extension.toml
+  Cargo.toml
+  src/lib.rs
+  languages/
+    mylang/
+      config.toml
+      highlights.scm
+      brackets.scm
+      outline.scm
+      indents.scm
+```
+
+**extension.toml**:
+```toml
+id = "mylang"
+name = "MyLang"
+version = "0.1.0"
+schema_version = 1
+authors = ["Your Name <you@example.com>"]
+description = "MyLang language support"
+repository = "https://github.com/username/zed-mylang"
+
+[language_servers.mylang-lsp]
+name = "MyLang Language Server"
+language = "MyLang"
+
+[grammars.mylang]
+repository = "https://github.com/username/tree-sitter-mylang"
+commit = "abc123..."
+```
+
+**languages/mylang/config.toml**:
+```toml
+name = "MyLang"
+grammar = "mylang"
+path_suffixes = ["myl"]
+line_comments = ["# "]
+tab_size = 4
+```
+
+See the [html](https://github.com/zed-industries/zed/tree/main/extensions/html) and [test-extension](https://github.com/zed-industries/zed/tree/main/extensions/test-extension) examples for complete implementations.
+
+## Resources
+
+- [Tree-sitter Documentation](https://tree-sitter.github.io/tree-sitter/)
+- [Tree-sitter Query Syntax](https://tree-sitter.github.io/tree-sitter/using-parsers/queries/index.html)
+- [Language Server Protocol](https://microsoft.github.io/language-server-protocol/)
+- [zed_extension_api Docs](https://docs.rs/zed_extension_api/latest/zed_extension_api/)
+- [Zed Example Extensions](https://github.com/zed-industries/zed/tree/main/extensions)

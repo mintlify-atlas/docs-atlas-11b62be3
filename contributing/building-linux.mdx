@@ -1,0 +1,235 @@
+---
+title: Building Zed for Linux
+description: Guide to building Zed from source on Linux
+---
+
+# Building Zed for Linux
+
+## Clone the Repository
+
+Clone the [Zed repository](https://github.com/zed-industries/zed):
+
+```sh
+git clone https://github.com/zed-industries/zed.git
+cd zed
+```
+
+## Install Dependencies
+
+### Rust
+
+Install [rustup](https://www.rust-lang.org/tools/install):
+
+```sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+### System Libraries
+
+Install the necessary system libraries:
+
+```sh
+script/linux
+```
+
+If you prefer to install the system libraries manually, you can find the list of required packages in the `script/linux` file.
+
+### Linkers
+
+On Linux, Rust's default linker is [LLVM's `lld`](https://blog.rust-lang.org/2025/09/18/Rust-1.90.0/). Alternative linkers, especially [Wild](https://github.com/davidlattimore/wild) and [Mold](https://github.com/rui314/mold), can improve clean and incremental build times.
+
+Zed currently uses Mold in CI because it is more mature. For local development, Wild is recommended because it is typically 5-20% faster than Mold.
+
+These linkers can be installed with:
+
+```sh
+script/install-mold
+script/install-wild
+```
+
+#### Using Wild as Your Default Linker
+
+To use Wild as your default, add these lines to your `~/.cargo/config.toml`:
+
+```toml
+[target.x86_64-unknown-linux-gnu]
+linker = "clang"
+rustflags = ["-C", "link-arg=--ld-path=wild"]
+
+[target.aarch64-unknown-linux-gnu]
+linker = "clang"
+rustflags = ["-C", "link-arg=--ld-path=wild"]
+```
+
+#### Using Mold as Your Default Linker
+
+To use Mold as your default:
+
+```toml
+[target.'cfg(target_os = "linux")']
+rustflags = ["-C", "link-arg=-fuse-ld=mold"]
+```
+
+## Build Zed from Source
+
+Once the dependencies are installed, you can build Zed using [Cargo](https://doc.rust-lang.org/cargo/).
+
+### Debug Build
+
+For a debug build of the editor:
+
+```sh
+cargo run
+```
+
+### CLI in Release Mode
+
+In release mode, the primary user interface is the `cli` crate. You can run it in development with:
+
+```sh
+cargo run -p cli
+```
+
+### Run Tests
+
+To run the tests:
+
+```sh
+cargo test --workspace
+```
+
+## Install a Development Build
+
+You can install a local build on your machine with:
+
+```sh
+./script/install-linux
+```
+
+This builds `zed` and the `cli` in release mode, installs the binary at `~/.local/bin/zed`, and installs `.desktop` files to `~/.local/share`.
+
+### Linker Errors with aws-lc-rs
+
+If you encounter linker errors similar to:
+
+```
+error: linking with `cc` failed: exit status: 1 ...
+= note: /usr/bin/ld: /tmp/rustcISMaod/libaws_lc_sys-79f08eb6d32e546e.rlib(f8e4fd781484bd36-bcm.o): in function `aws_lc_0_25_0_handle_cpu_env':
+          /aws-lc/crypto/fipsmodule/cpucap/cpu_intel.c:(.text.aws_lc_0_25_0_handle_cpu_env+0x63): undefined reference to `__isoc23_sscanf'
+          ...
+```
+
+**Cause**: This is caused by known bugs in aws-lc-rs (no GCC >= 14 support): [FIPS fails to build with GCC >= 14](https://github.com/aws/aws-lc-rs/issues/569) & [GCC-14 - build failure for FIPS module](https://github.com/aws/aws-lc/issues/2010)
+
+**Workaround**: Set the remote server target to `x86_64-unknown-linux-gnu`:
+
+```sh
+export REMOTE_SERVER_TARGET=x86_64-unknown-linux-gnu
+script/install-linux
+```
+
+You can refer to [linux: Linker error for remote_server when using script/install-linux](https://github.com/zed-industries/zed/issues/24880) for more information.
+
+## Wayland & X11
+
+Zed supports both X11 and Wayland. By default, we pick whichever we can find at runtime. If you're on Wayland and want to run in X11 mode, use the environment variable:
+
+```sh
+WAYLAND_DISPLAY='' cargo run
+```
+
+## Memory Profiling
+
+[`heaptrack`](https://github.com/KDE/heaptrack) is quite useful for diagnosing memory leaks. To install it:
+
+```sh
+sudo apt install heaptrack heaptrack-gui
+cargo install cargo-heaptrack
+```
+
+Then, to build and run Zed with the profiler attached:
+
+```sh
+cargo heaptrack -b zed
+```
+
+When this zed instance is exited, terminal output will include a command to run `heaptrack_interpret` to convert the `*.raw.zst` profile to a `*.zst` file which can be passed to `heaptrack_gui` for viewing.
+
+## Perf Recording
+
+How to get a flamegraph with resolved symbols from a running Zed instance. Use this when Zed is using a lot of CPU. It is not useful for hangs.
+
+### During the Incident
+
+1. Find the PID (process ID):
+   ```sh
+   ps -eo size,pid,comm | grep zed | sort | head -n 1 | cut -d ' ' -f 2
+   ```
+   Or find the PID of `zed-editor` with the highest RAM usage in htop/btop/top.
+
+2. Install perf (on Ubuntu derivatives):
+   ```sh
+   sudo apt install linux-tools
+   ```
+
+3. Perf record:
+   ```sh
+   sudo perf record -p <pid you just found>
+   ```
+   Wait a few seconds to gather data, then press Ctrl+C. You should now have a `perf.data` file.
+
+4. Make the output file user owned:
+   ```sh
+   sudo chown $USER:$USER perf.data
+   ```
+
+5. Get build info:
+   Run zed again and type `zed: about` in the command palette to get the exact commit.
+
+The `perf.data` file can be sent to Zed together with the exact commit.
+
+### Later (by Zed Staff)
+
+1. Build Zed with symbols:
+   Check out the commit found previously and modify `Cargo.toml`. Apply the following diff, then make a release build:
+
+   ```diff
+   [profile.release]
+   -debug = "limited"
+   +debug = "full"
+   ```
+
+2. Add the symbols to the perf database:
+   ```sh
+   perf buildid-cache -v -a <path to release zed binary>
+   ```
+
+3. Resolve the symbols from the db:
+   ```sh
+   perf inject -i perf.data -o perf_with_symbols.data
+   ```
+
+4. Install flamegraph:
+   ```sh
+   cargo install cargo-flamegraph
+   ```
+
+5. Render the flamegraph:
+   ```sh
+   flamegraph --perfdata perf_with_symbols.data
+   ```
+
+## Troubleshooting
+
+### Cargo errors claiming that a dependency is using unstable features
+
+Try:
+
+```sh
+cargo clean
+cargo build
+```
+
+## Packaging Zed
+
+For information about packaging Zed for distribution, see the [notes for packaging Zed](https://zed.dev/docs/development/linux#notes-for-packaging-zed) in the official documentation.

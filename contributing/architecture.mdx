@@ -1,0 +1,208 @@
+---
+title: Zed Architecture
+description: Overview of Zed's codebase structure and key architectural concepts
+---
+
+# Zed Architecture
+
+This guide provides an overview of Zed's architecture and the major crates that make up the codebase.
+
+## Glossary
+
+We recommend keeping the [Zed glossary](https://github.com/zed-industries/zed/blob/main/docs/src/development/glossary.md) at your side when starting out. It lists and explains many of the structures and terms you'll encounter throughout the codebase.
+
+## Core Crates
+
+Zed is made up of several smaller crates. Here are the ones you're most likely to interact with:
+
+### GPUI
+
+[`gpui`](https://github.com/zed-industries/zed/tree/main/crates/gpui) is a GPU-accelerated UI framework which provides all of the building blocks for Zed. **We recommend familiarizing yourself with the root level GPUI documentation.**
+
+GPUI is built around several key concepts:
+
+- **App**: A singleton that holds full application state, including all entities. Not `Send`, so it exists only on the thread that created it (usually the main/UI thread).
+- **Context**: A wrapper around `App` with specialized behavior for a specific entity.
+- **Entity**: A strong, well-typed reference to a struct managed by GPUI.
+- **View**: An entity that implements the `Render` trait to produce UI elements.
+- **Element**: A type that can be laid out and painted to the screen.
+- **Task**: A future running on a background or foreground executor.
+
+### Editor
+
+[`editor`](https://github.com/zed-industries/zed/tree/main/crates/editor) contains the core `Editor` type that drives both the code editor and all various input fields within Zed. It also handles a display layer for LSP features such as Inlay Hints or code completions.
+
+Key concepts:
+
+- **Buffer**: The in-memory representation of a file together with relevant data such as syntax trees, git status and diagnostics.
+- **Editor**: The text editor type. Most editable surfaces in Zed are an `Editor`, including single-line inputs.
+- **MultiBuffer**: A list of editors that allows editing multiple files simultaneously. Opens when operations return multiple locations (e.g., search or go to definition).
+
+### Project
+
+[`project`](https://github.com/zed-industries/zed/tree/main/crates/project) manages files and navigation within the file tree. It is also Zed's side of communication with LSP.
+
+Key concepts:
+
+- **Project**: One or more worktrees.
+- **Worktree**: Represents either local or remote files.
+- **Entry**: A file, directory, pending directory, or unloaded directory.
+
+### Workspace
+
+[`workspace`](https://github.com/zed-industries/zed/tree/main/crates/workspace) handles local state serialization and groups projects together. It's the root of the window UI.
+
+Key concepts:
+
+- **Workspace**: The root of the window.
+- **Pane**: An area in the center where we can place items, such as an editor, multi-buffer or terminal.
+- **Panel**: An entity implementing the `Panel` trait. Panels can be placed in a dock.
+- **Dock**: A UI element similar to a pane that can be opened and hidden. Up to three docks can be open at once: left, right, and bottom.
+
+### LSP
+
+[`lsp`](https://github.com/zed-industries/zed/tree/main/crates/lsp) handles communication with external LSP servers.
+
+### Language
+
+[`language`](https://github.com/zed-industries/zed/tree/main/crates/language) drives the editor's understanding of programming languages - from providing a list of symbols to the syntax map.
+
+### Vim
+
+[`vim`](https://github.com/zed-industries/zed/tree/main/crates/vim) is a thin implementation of Vim workflow over the `editor` crate.
+
+### Collaboration
+
+[`collab`](https://github.com/zed-industries/zed/tree/main/crates/collab) is the collaboration server itself, driving features such as project sharing.
+
+[`rpc`](https://github.com/zed-industries/zed/tree/main/crates/rpc) defines messages to be exchanged with the collaboration server.
+
+Key concepts:
+
+- **Collab session**: Multiple users working in a shared project.
+- **Upstream client**: The Zed client which has shared their workspace.
+- **Downstream client**: The Zed client joining a shared workspace.
+
+### UI
+
+[`ui`](https://github.com/zed-industries/zed/tree/main/crates/ui) is a collection of UI components and common patterns used throughout Zed.
+
+[`theme`](https://github.com/zed-industries/zed/tree/main/crates/theme) defines the theme system and provides a default theme.
+
+### CLI
+
+[`cli`](https://github.com/zed-industries/zed/tree/main/crates/cli) is the CLI crate which invokes the Zed binary.
+
+### Zed
+
+[`zed`](https://github.com/zed-industries/zed/tree/main/crates/zed) is where all things come together, and the `main` entry point for Zed.
+
+## Workspace Structure
+
+Zed's codebase is organized as a Cargo workspace with over 200 crates. The workspace is defined in `Cargo.toml` at the repository root.
+
+### Major Crate Categories
+
+The crates are organized into several categories:
+
+- **Core UI**: `gpui`, `gpui_macros`, `gpui_platform`, `ui`, `ui_macros`, `theme`
+- **Editor**: `editor`, `language`, `lsp`, `multi_buffer`, `text`, `rope`
+- **Project Management**: `project`, `workspace`, `worktree`, `fs`
+- **Collaboration**: `collab`, `collab_ui`, `rpc`, `client`, `call`, `channel`
+- **Language Models**: `language_model`, `language_models`, `anthropic`, `open_ai`, `ollama`, `copilot`
+- **Extensions**: `extension`, `extension_host`, `extension_api`, `extensions_ui`
+- **Tools**: `terminal`, `terminal_view`, `debugger_ui`, `repl`
+- **Panels**: `project_panel`, `outline_panel`, `collab_ui`, `diagnostics`
+- **Features**: `search`, `file_finder`, `vim`, `git`, `git_ui`, `markdown_preview`
+
+### Build Configuration
+
+Zed uses several build profiles:
+
+- **dev**: Debug build with incremental compilation and 16 codegen units for faster builds
+- **release**: Optimized build with thin LTO and limited debug info
+- **release-fast**: Faster release build with full debug info, no LTO, and 16 codegen units
+
+Key build optimizations:
+
+- Proc macros are compiled with `opt-level = 3` even in dev builds
+- Single-source-file crates use `codegen-units = 1` to improve overall workspace build times
+- Split debuginfo on macOS/Linux for faster linking
+
+## Development Workflow
+
+### Running Clippy
+
+Zed uses a custom clippy script that should be used instead of `cargo clippy`:
+
+```sh
+./script/clippy
+```
+
+### Running Tests
+
+```sh
+cargo test --workspace
+```
+
+For better test performance and resource handling, use cargo-nextest:
+
+```sh
+cargo install cargo-nextest --locked
+cargo nextest run --workspace --no-fail-fast
+```
+
+### Avoiding Rebuilds
+
+If you're working on Zed itself, avoid opening the Zed repository in your development build. The environment variables exported by `cargo run` can invalidate the build cache. Instead, run your development build against a different project:
+
+```sh
+cargo run ~/path/to/other/project
+```
+
+## Key Architectural Patterns
+
+### State Management with GPUI
+
+GPUI uses an entity-component system:
+
+- All mutable state lives in entities managed by `App`
+- Entities can emit events that other entities subscribe to
+- Updates propagate through the system via notifications and subscriptions
+- Async work is managed through `Task` and executors
+
+### Rendering Pipeline
+
+The rendering flow:
+
+1. Entities implement `Render` to produce element trees
+2. Elements are laid out using flexbox
+3. Styled elements are painted to the GPU
+4. The window compositor presents the frame
+
+Target: 120 FPS (8ms frame budget)
+
+### Language Server Integration
+
+Zed communicates with language servers through:
+
+1. The `lsp` crate handles the protocol
+2. The `language` crate provides language-specific configuration
+3. The `project` crate manages LSP server lifecycle
+4. The `editor` crate displays LSP features (completions, diagnostics, etc.)
+
+### Extension System
+
+Zed supports extensions via WebAssembly:
+
+- Extensions are compiled to WASM
+- The `extension_host` runs extensions in a sandboxed environment
+- Extensions can provide language servers, themes, and slash commands
+- See the [extensions repository](https://github.com/zed-industries/extensions) for examples
+
+## Further Reading
+
+- [GPUI Documentation](https://github.com/zed-industries/zed/tree/main/crates/gpui)
+- [Development Glossary](https://github.com/zed-industries/zed/blob/main/docs/src/development/glossary.md)
+- [Contributing Guidelines](https://github.com/zed-industries/zed/blob/main/CONTRIBUTING.md)
+- [Zed Extensions](https://github.com/zed-industries/extensions)

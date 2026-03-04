@@ -1,122 +1,135 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Zed",
+  "theme": "palm",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#064ccd",
+    "light": "#7c7c7c",
+    "dark": "#070707"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "https://media.brand.dev/5200a352-f61a-42d1-8d4f-14366e218d26.png",
+  "logo": {
+    "light": "https://media.brand.dev/e28ab615-134b-4c50-8310-c170a46aabbc.png",
+    "dark": "https://media.brand.dev/e28ab615-134b-4c50-8310-c170a46aabbc.png"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/zed-industries/zed"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/zed-industries/zed"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "introduction",
+              "installation",
+              "quickstart"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core Features",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "features/editing",
+              "features/navigation",
+              "features/terminal",
+              "features/git",
+              "features/tasks"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "AI Features",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "ai/overview",
+              "ai/agent-panel",
+              "ai/inline-assistant",
+              "ai/configuration",
+              "ai/providers"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Collaboration",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "collaboration/overview",
+              "collaboration/channels",
+              "collaboration/screen-sharing"
+            ]
+          },
+          {
+            "group": "Extensions",
+            "pages": [
+              "extensions/overview",
+              "extensions/installing",
+              "extensions/developing",
+              "extensions/language-extensions",
+              "extensions/theme-extensions"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/settings",
+              "configuration/keybindings",
+              "configuration/themes",
+              "configuration/languages"
+            ]
+          },
+          {
+            "group": "Remote Development",
+            "pages": [
+              "remote/overview",
+              "remote/ssh",
+              "remote/dev-containers"
+            ]
+          },
+          {
+            "group": "Platform Support",
+            "pages": [
+              "platforms/macos",
+              "platforms/linux",
+              "platforms/windows"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "CLI Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "CLI Commands",
             "pages": [
-              "api-reference/introduction"
+              "cli/overview",
+              "cli/open",
+              "cli/diff",
+              "cli/options"
             ]
-          },
+          }
+        ]
+      },
+      {
+        "tab": "Contributing",
+        "groups": [
           {
-            "group": "Endpoint examples",
+            "group": "Development",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "contributing/overview",
+              "contributing/building-macos",
+              "contributing/building-linux",
+              "contributing/building-windows",
+              "contributing/architecture"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

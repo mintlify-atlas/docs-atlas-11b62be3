@@ -1,0 +1,396 @@
+---
+title: Themes
+description: Customize Zed's appearance with themes
+---
+
+Zed supports extensive theming capabilities, allowing you to customize the editor's appearance. Themes control colors for UI elements, syntax highlighting, and more.
+
+## Selecting a Theme
+
+### Static Theme
+
+Set a single theme that doesn't change:
+
+```json
+{
+  "theme": "One Dark"
+}
+```
+
+### Dynamic Theme
+
+Automatically switch themes based on system appearance:
+
+```json
+{
+  "theme": {
+    "mode": "system",  // Options: "system", "light", "dark"
+    "light": "One Light",
+    "dark": "One Dark"
+  }
+}
+```
+
+- `"system"` - Follows your OS appearance setting
+- `"light"` - Always use the light theme
+- `"dark"` - Always use the dark theme
+
+### Changing Themes
+
+Switch themes via:
+- Command Palette: "theme selector: toggle"
+- Keyboard: `cmd-k cmd-t` (macOS) or `ctrl-k ctrl-t` (Linux/Windows)
+- Settings file as shown above
+
+## Built-in Themes
+
+Zed includes several themes out of the box:
+
+### Light Themes
+- One Light
+- Atelier Cave Light
+- Ayu Light
+- GitHub Light
+- Solarized Light
+
+### Dark Themes
+- One Dark (default)
+- Atelier Cave Dark
+- Ayu Dark
+- Dracula
+- GitHub Dark
+- Gruvbox Dark
+- Nord
+- Rosé Pine
+- Solarized Dark
+- Tokyo Night
+
+## Icon Themes
+
+Customize file and folder icons separately from the main theme:
+
+```json
+{
+  "icon_theme": "Zed (Default)"
+}
+```
+
+Like themes, icon themes can be dynamic:
+
+```json
+{
+  "icon_theme": {
+    "mode": "system",
+    "light": "Zed Light Icons",
+    "dark": "Zed Dark Icons"
+  }
+}
+```
+
+## Installing Theme Extensions
+
+Install additional themes from the extension marketplace:
+
+1. Open the Extensions view: `cmd-shift-x` (macOS) or `ctrl-shift-x` (Linux/Windows)
+2. Search for "theme"
+3. Install your desired theme extension
+4. Select it from the theme picker
+
+Popular community themes:
+- Catppuccin
+- Material Theme
+- Monokai Pro
+- Night Owl
+- Nord Extended
+
+## Theme Customization
+
+Zed allows you to override specific theme colors without creating a full custom theme.
+
+### Experimental Theme Overrides
+
+<Note>
+Theme overrides are experimental. See [tracking issue #18078](https://github.com/zed-industries/zed/issues/18078) for status.
+</Note>
+
+Override colors in your active theme:
+
+```json
+{
+  "experimental_theme_overrides": {
+    "colors": {
+      "editor.background": "#1e1e1e",
+      "editor.foreground": "#d4d4d4",
+      "editor.line_number": "#858585",
+      "editor.active_line_background": "#2a2a2a"
+    }
+  }
+}
+```
+
+### Per-Theme Overrides
+
+Apply different overrides to specific themes:
+
+```json
+{
+  "theme_overrides": {
+    "One Dark": {
+      "colors": {
+        "editor.background": "#1e2127"
+      }
+    },
+    "Ayu Dark": {
+      "colors": {
+        "editor.background": "#0f1419"
+      }
+    }
+  }
+}
+```
+
+## Customizable Theme Properties
+
+### Colors
+
+#### Editor Colors
+
+```json
+{
+  "experimental_theme_overrides": {
+    "colors": {
+      "editor.background": "#1e1e1e",
+      "editor.foreground": "#d4d4d4",
+      "editor.active_line_background": "#2a2a2a",
+      "editor.line_number": "#858585",
+      "editor.active_line_number": "#c6c6c6",
+      "editor.gutter.background": "#1e1e1e",
+      "editor.selection.background": "#264f78",
+      "editor.find_match_background": "#515c6a",
+      "editor.active_match_background": "#515c6a"
+    }
+  }
+}
+```
+
+#### UI Colors
+
+```json
+{
+  "experimental_theme_overrides": {
+    "colors": {
+      "panel.background": "#252526",
+      "tab.active_background": "#1e1e1e",
+      "tab.inactive_background": "#2d2d2d",
+      "toolbar.background": "#252526",
+      "title_bar.background": "#3c3c3c",
+      "status_bar.background": "#007acc"
+    }
+  }
+}
+```
+
+#### Status Colors
+
+```json
+{
+  "experimental_theme_overrides": {
+    "status": {
+      "created": "#00ff00",
+      "deleted": "#ff0000",
+      "error": "#f44747",
+      "hint": "#4fc1ff",
+      "ignored": "#6c6c6c",
+      "info": "#3794ff",
+      "modified": "#ffff00",
+      "renamed": "#ff00ff",
+      "warning": "#ff8800"
+    }
+  }
+}
+```
+
+### Syntax Highlighting
+
+Customize syntax colors for different code elements:
+
+```json
+{
+  "experimental_theme_overrides": {
+    "syntax": {
+      "attribute": { "color": "#ffd700" },
+      "boolean": { "color": "#56b6c2" },
+      "comment": { 
+        "color": "#5c6370",
+        "font_style": "italic"
+      },
+      "constant": { "color": "#d19a66" },
+      "constructor": { "color": "#e5c07b" },
+      "function": { "color": "#61afef" },
+      "keyword": { "color": "#c678dd" },
+      "number": { "color": "#d19a66" },
+      "operator": { "color": "#56b6c2" },
+      "property": { "color": "#e06c75" },
+      "string": { "color": "#98c379" },
+      "type": { "color": "#e5c07b" },
+      "variable": { "color": "#e06c75" }
+    }
+  }
+}
+```
+
+#### Font Styles
+
+Syntax elements can have font styling:
+
+- `"font_style": "normal"`
+- `"font_style": "italic"`
+- `"font_weight": 700` (bold)
+
+### Window Appearance
+
+Control window background behavior:
+
+```json
+{
+  "experimental_theme_overrides": {
+    "window_background_appearance": "opaque"  // Options: "opaque", "transparent", "blurred"
+  }
+}
+```
+
+### Player Colors
+
+Colors used for collaborative cursors:
+
+```json
+{
+  "experimental_theme_overrides": {
+    "players": [
+      { "cursor": "#ff0000", "selection": "#ff000033" },
+      { "cursor": "#00ff00", "selection": "#00ff0033" },
+      { "cursor": "#0000ff", "selection": "#0000ff33" }
+    ]
+  }
+}
+```
+
+### Accent Colors
+
+Colors for UI accents and highlights:
+
+```json
+{
+  "experimental_theme_overrides": {
+    "accents": [
+      "#e06c75",
+      "#d19a66",
+      "#e5c07b",
+      "#98c379",
+      "#56b6c2",
+      "#61afef",
+      "#c678dd"
+    ]
+  }
+}
+```
+
+These colors are used for bracket colorization when `"colorize_brackets": true`.
+
+## Creating Custom Themes
+
+To create a complete custom theme:
+
+1. Create a theme extension:
+
+```json
+// extension.json
+{
+  "name": "My Custom Theme",
+  "version": "1.0.0",
+  "themes": {
+    "My Dark Theme": "themes/dark.json"
+  }
+}
+```
+
+2. Define your theme in `themes/dark.json`:
+
+```json
+{
+  "$schema": "https://zed.dev/schema/themes/v0.1.0.json",
+  "name": "My Dark Theme",
+  "author": "Your Name",
+  "appearance": "dark",
+  "style": {
+    "colors": {
+      // ... all theme colors
+    },
+    "syntax": {
+      // ... syntax highlighting
+    }
+  }
+}
+```
+
+3. Install the extension locally or publish it
+
+See the [Extensions](/extensions/overview) documentation for more details on creating theme extensions.
+
+## Theme Development
+
+### Testing Theme Changes
+
+When developing themes:
+
+1. Use `experimental_theme_overrides` for rapid iteration
+2. Reload themes: Command Palette > "zed: reload themes"
+3. Check the theme in different contexts:
+   - Editor
+   - Terminal
+   - Settings UI
+   - Panels
+
+### Color Contrast
+
+Ensure sufficient contrast for accessibility:
+
+```json
+{
+  "minimum_contrast_for_highlights": 45  // APCA contrast value (0-106)
+}
+```
+
+Recommended values:
+- 45: Large text (36px+)
+- 60: Content text
+- 75: Body text (recommended minimum)
+- 90: Preferred for body text
+
+## Exporting and Sharing Themes
+
+Share your theme customizations:
+
+1. Copy your theme overrides from `settings.json`
+2. Share the JSON snippet with others
+3. Or create a proper extension for wider distribution
+
+Example shared theme configuration:
+
+```json
+{
+  "theme": "One Dark",
+  "experimental_theme_overrides": {
+    "colors": {
+      "editor.background": "#1e2127",
+      "panel.background": "#21252b"
+    }
+  }
+}
+```
+
+## Theme Resources
+
+- [Theme Gallery](https://github.com/zed-industries/extensions/tree/main/themes) - Browse community themes
+- [Color Scheme Converter](https://zed.dev/docs/extensions/themes) - Convert themes from other editors
+- [Zed Discord](https://discord.gg/zed) - Share and discuss themes with the community

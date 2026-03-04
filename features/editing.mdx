@@ -1,0 +1,440 @@
+---
+title: Code Editing
+description: Comprehensive code editing features including multi-cursor editing, intelligent completion, and text transformations
+---
+
+## Overview
+
+Zed provides powerful code editing capabilities built on top of a fast, native editor engine. The editor supports single-line, multi-line, and auto-height modes with extensive customization options.
+
+## Code Completion
+
+Zed offers intelligent code completion powered by language servers and AI-assisted predictions.
+
+### Triggering Completions
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Shows code completion suggestions at the cursor position.
+ShowCompletions,
+/// Shows word completions.
+ShowWordCompletions,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Ctrl+Space` - Show completions
+- `Ctrl+Shift+Space` - Show word completions
+
+### Accepting Completions
+
+Zed provides multiple ways to accept completion suggestions:
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Confirms and accepts the currently selected completion suggestion.
+pub struct ConfirmCompletion {
+    pub item_ix: Option<usize>,
+}
+
+/// Confirms completion by inserting at cursor.
+ConfirmCompletionInsert,
+/// Confirms completion by replacing existing text.
+ConfirmCompletionReplace,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Enter` - Confirm selected completion
+- `Tab` - Accept completion and continue
+
+### Edit Predictions
+
+AI-powered edit predictions help you write code faster:
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Accepts the full edit prediction.
+AcceptEditPrediction,
+/// Accepts a partial edit prediction.
+AcceptNextWordEditPrediction,
+AcceptNextLineEditPrediction,
+/// Navigates to the next edit prediction.
+NextEditPrediction,
+/// Navigates to the previous edit prediction.
+PreviousEditPrediction,
+/// Toggles edit prediction feature.
+ToggleEditPrediction,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Alt+Tab` - Show/navigate edit predictions
+- `Ctrl+Cmd+E` - Toggle edit predictions
+
+## Multi-Cursor Editing
+
+Multi-cursor editing allows you to edit multiple locations simultaneously.
+
+### Adding Cursors
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Adds a cursor above the current selection.
+pub struct AddSelectionAbove {
+    pub skip_soft_wrap: bool,
+}
+
+/// Adds a cursor below the current selection.
+pub struct AddSelectionBelow {
+    pub skip_soft_wrap: bool,
+}
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+Ctrl+P` / `Cmd+Alt+Up` - Add cursor above
+- `Cmd+Ctrl+N` / `Cmd+Alt+Down` - Add cursor below
+- `Cmd+D` - Select next occurrence
+- `Cmd+Shift+L` - Select all occurrences
+
+### Multi-Selection Operations
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Selects the next occurrence of the current selection.
+pub struct SelectNext {
+    pub replace_newest: bool,
+}
+
+/// Selects all matches of the current selection.
+SelectAllMatches,
+
+/// Splits selection into individual lines.
+pub struct SplitSelectionIntoLines {
+    pub keep_selections: bool,
+}
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+K Cmd+D` - Select next (skip current)
+- `Alt+Enter` - Select all matches
+- `Cmd+Shift+L` - Split into lines
+
+## Selection & Navigation
+
+### Word and Subword Movement
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Moves cursor to the start of the previous word.
+MoveToPreviousWordStart,
+/// Moves cursor to the end of the next word.
+MoveToNextWordEnd,
+/// Moves cursor to the start of the previous subword.
+MoveToPreviousSubwordStart,
+/// Moves cursor to the end of the next subword.
+MoveToNextSubwordEnd,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Alt+Left` - Move to previous word
+- `Alt+Right` - Move to next word
+- `Ctrl+Alt+Left` - Move to previous subword
+- `Ctrl+Alt+Right` - Move to next subword
+
+### Syntax-Aware Selection
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Selects the next larger syntax node.
+SelectLargerSyntaxNode,
+/// Selects the next smaller syntax node.
+SelectSmallerSyntaxNode,
+/// Selects the enclosing symbol.
+SelectEnclosingSymbol,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+Ctrl+Right` / `Ctrl+Shift+Right` - Expand selection
+- `Cmd+Ctrl+Left` / `Ctrl+Shift+Left` - Shrink selection
+- `Cmd+Alt+E` - Select enclosing symbol
+
+### Line Operations
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Moves the current line down.
+MoveLineDown,
+/// Moves the current line up.
+MoveLineUp,
+/// Duplicates the current line below.
+DuplicateLineDown,
+/// Duplicates the current line above.
+DuplicateLineUp,
+/// Deletes the current line.
+DeleteLine,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Alt+Down` - Move line down
+- `Alt+Up` - Move line up
+- `Alt+Shift+Down` - Duplicate line down
+- `Alt+Shift+Up` - Duplicate line up
+- `Cmd+Shift+K` - Delete line
+
+## Text Transformations
+
+Zed includes powerful text transformation utilities:
+
+### Case Conversion
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Converts selected text to kebab-case.
+ConvertToKebabCase,
+/// Converts selected text to lowerCamelCase.
+ConvertToLowerCamelCase,
+/// Converts selected text to lowercase.
+ConvertToLowerCase,
+/// Converts selected text to snake_case.
+ConvertToSnakeCase,
+/// Converts selected text to Title Case.
+ConvertToTitleCase,
+/// Converts selected text to UpperCamelCase.
+ConvertToUpperCamelCase,
+/// Converts selected text to UPPERCASE.
+ConvertToUpperCase,
+/// Toggles the case of selected text.
+ConvertToOppositeCase,
+```
+</CodeGroup>
+
+### Line Utilities
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Sorts selected lines case-sensitively.
+SortLinesCaseSensitive,
+/// Sorts selected lines case-insensitively.
+SortLinesCaseInsensitive,
+/// Sorts selected lines by length.
+SortLinesByLength,
+/// Randomly shuffles selected lines.
+ShuffleLines,
+/// Reverses the order of selected lines.
+ReverseLines,
+/// Removes duplicate lines (case-sensitive).
+UniqueLinesCaseSensitive,
+/// Removes duplicate lines (case-insensitive).
+UniqueLinesCaseInsensitive,
+```
+</CodeGroup>
+
+### Rotation and Rewrapping
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Rotates selections or lines forward.
+RotateSelectionsForward,
+/// Rotates selections or lines backward.
+RotateSelectionsBackward,
+/// Rewraps text to fit within the preferred line length.
+Rewrap,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+K Cmd+Q` / `Cmd+K Q` - Rewrap text
+
+## Code Formatting
+
+### Auto-Formatting
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Formats the entire document.
+Format,
+/// Formats only the selected text.
+FormatSelections,
+/// Organizes import statements.
+OrganizeImports,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+Shift+I` - Format document
+- `Alt+Shift+O` - Organize imports
+
+### Indentation
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Increases indentation of selected lines.
+Indent,
+/// Decreases indentation of selected lines.
+Outdent,
+/// Automatically adjusts indentation based on context.
+AutoIndent,
+/// Converts indentation from tabs to spaces.
+ConvertIndentationToSpaces,
+/// Converts indentation from spaces to tabs.
+ConvertIndentationToTabs,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+]` - Indent
+- `Cmd+[` - Outdent
+- `Tab` - Indent or accept completion
+- `Shift+Tab` - Outdent
+
+## Comments
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Toggles comment markers for the selected lines.
+pub struct ToggleComments {
+    pub advance_downwards: bool,
+    pub ignore_indent: bool,
+}
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+/` - Toggle line comments
+
+## Code Actions
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Toggles the display of available code actions at the cursor position.
+pub struct ToggleCodeActions {
+    pub deployed_from: Option<CodeActionSource>,
+    pub quick_launch: bool,
+}
+
+/// Confirms and applies the currently selected code action.
+pub struct ConfirmCodeAction {
+    pub item_ix: Option<usize>,
+}
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+.` - Toggle code actions
+
+## Snippets
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Inserts a snippet at the cursor.
+pub struct InsertSnippet {
+    /// Language name if using a named snippet
+    pub language: Option<String>,
+    /// Name if using a named snippet
+    pub name: Option<String>,
+    /// Snippet body, if not using a named snippet
+    pub snippet: Option<String>,
+}
+
+/// Goes to the next snippet tabstop if one exists.
+NextSnippetTabstop,
+/// Goes to the previous snippet tabstop if one exists.
+PreviousSnippetTabstop,
+```
+</CodeGroup>
+
+## UUID Generation
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Inserts a UUID v4 at cursor position.
+InsertUuidV4,
+/// Inserts a UUID v7 at cursor position.
+InsertUuidV7,
+```
+</CodeGroup>
+
+## Folding
+
+### Basic Folding
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Toggles folding at the current position.
+ToggleFold,
+/// Folds the current code block.
+Fold,
+/// Unfolds lines at cursor.
+UnfoldLines,
+/// Folds all foldable regions in the editor.
+FoldAll,
+/// Unfolds all folded regions.
+UnfoldAll,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+K Cmd+L` - Toggle fold
+- `Alt+Cmd+[` - Fold
+- `Alt+Cmd+]` - Unfold
+- `Cmd+K Cmd+0` - Fold all
+- `Cmd+K Cmd+J` - Unfold all
+
+### Advanced Folding
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Folds all code blocks at the specified indentation level.
+pub struct FoldAtLevel(pub u32);
+
+/// Folds all function bodies in the editor.
+FoldFunctionBodies,
+/// Folds the current code block and all its children.
+FoldRecursive,
+/// Toggles recursive folding at the current position.
+ToggleFoldRecursive,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+K Cmd+1` through `Cmd+K Cmd+9` - Fold at level 1-9
+- `Cmd+K Cmd+[` - Fold recursive
+- `Cmd+K Cmd+]` - Unfold recursive
+
+## Undo/Redo
+
+<CodeGroup>
+```rust editor/src/actions.rs
+/// Undoes the last edit.
+Undo,
+/// Redoes the last undone edit.
+Redo,
+/// Undoes the last selection change.
+UndoSelection,
+/// Redoes the last selection change.
+RedoSelection,
+```
+</CodeGroup>
+
+**Keybindings:**
+- `Cmd+Z` - Undo
+- `Cmd+Shift+Z` - Redo
+- `Cmd+U` - Undo selection
+- `Cmd+Shift+U` - Redo selection
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Navigation" icon="compass" href="/features/navigation">
+    File finder, symbol search, and go-to-definition
+  </Card>
+  <Card title="Terminal" icon="terminal" href="/features/terminal">
+    Integrated terminal with shell integration
+  </Card>
+</CardGroup>

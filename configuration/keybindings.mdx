@@ -1,0 +1,377 @@
+---
+title: Keybindings
+description: Customize keyboard shortcuts in Zed
+---
+
+Zed's keybinding system allows you to customize keyboard shortcuts through a JSON configuration file. You can override default bindings, create new ones, and use context-specific keymaps.
+
+## Keymap File
+
+Keybindings are configured in `~/.config/zed/keymap.json`.
+
+To open your keymap file:
+- Command Palette: "zed: open keymap"
+- Or manually edit `~/.config/zed/keymap.json`
+
+## Base Keymaps
+
+Zed provides several base keymaps that emulate other editors:
+
+```json
+// In settings.json
+{
+  "base_keymap": "VSCode"  // Options: "VSCode", "JetBrains", "SublimeText", "Atom", "TextMate", "Emacs", "Cursor", "None"
+}
+```
+
+The base keymap determines the default keybindings. Your custom keybindings always take precedence.
+
+## Keymap Structure
+
+The keymap file is a JSON array of binding objects:
+
+```json
+[
+  {
+    "context": "Editor",
+    "bindings": {
+      "ctrl-/": "editor::ToggleComments",
+      "cmd-k cmd-c": "editor::ToggleComments"
+    }
+  }
+]
+```
+
+### Context
+
+The `context` field specifies where the keybinding is active:
+
+- `"Editor"` - Active when editing text
+- `"Workspace"` - Active anywhere in the workspace
+- `"Terminal"` - Active in terminal panes
+- `"ProjectPanel"` - Active in the project panel
+- `"BufferSearchBar"` - Active in the find bar
+- `"EmptyPane"` - Active when no editor is open
+- `"VimControl"` - Active in Vim normal mode
+- `"VimInsert"` - Active in Vim insert mode
+- `"VimVisual"` - Active in Vim visual mode
+
+Contexts can be combined with boolean logic:
+
+```json
+[
+  {
+    "context": "Editor && vim_mode == normal",
+    "bindings": {
+      "space f f": "file_finder::Toggle"
+    }
+  }
+]
+```
+
+### Bindings Format
+
+Each binding maps a key combination to an action:
+
+```json
+"key-combination": "namespace::ActionName"
+```
+
+#### Modifier Keys
+
+- `cmd` - Command key (macOS) / Windows key (Windows) / Super key (Linux)
+- `ctrl` - Control key
+- `alt` - Alt/Option key
+- `shift` - Shift key
+
+Multiple modifiers are separated by `-`:
+
+```json
+"cmd-shift-p": "command_palette::Toggle"
+```
+
+#### Key Sequences
+
+Multiple key combinations can create sequences, separated by spaces:
+
+```json
+"cmd-k cmd-b": "workspace::ToggleLeftDock"
+```
+
+Press `cmd-k`, then `cmd-b` to toggle the left dock.
+
+#### Special Keys
+
+- Function keys: `f1`, `f2`, ..., `f12`
+- Arrow keys: `up`, `down`, `left`, `right`
+- Navigation: `pageup`, `pagedown`, `home`, `end`
+- Editing: `enter`, `return`, `tab`, `space`, `backspace`, `delete`, `escape`
+
+## Action Format
+
+### Simple Actions
+
+```json
+"cmd-s": "workspace::Save"
+```
+
+### Actions with Arguments
+
+Some actions accept parameters:
+
+```json
+"cmd-1": ["pane::ActivateItem", { "index": 0 }],
+"cmd-2": ["pane::ActivateItem", { "index": 1 }],
+"ctrl-g": ["go_to_line::Toggle", { "line": 100 }]
+```
+
+### Multiple Actions
+
+Execute multiple actions with one keybinding:
+
+```json
+"cmd-shift-f": [
+  "workspace::NewSearch",
+  "search::FocusEditor"
+]
+```
+
+## Common Keybinding Examples
+
+### File Operations
+
+```json
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "cmd-o": "workspace::Open",
+      "cmd-s": "workspace::Save",
+      "cmd-shift-s": "workspace::SaveAs",
+      "cmd-w": "pane::CloseActiveItem",
+      "cmd-shift-w": "workspace::CloseWindow",
+      "cmd-k cmd-w": "pane::CloseAllItems"
+    }
+  }
+]
+```
+
+### Editor Navigation
+
+```json
+[
+  {
+    "context": "Editor",
+    "bindings": {
+      "cmd-g": "go_to_line::Toggle",
+      "cmd-p": "file_finder::Toggle",
+      "cmd-shift-o": "outline::Toggle",
+      "f12": "editor::GoToDefinition",
+      "alt-f12": "editor::GoToImplementation",
+      "shift-f12": "editor::FindAllReferences",
+      "f2": "editor::Rename"
+    }
+  }
+]
+```
+
+### Text Editing
+
+```json
+[
+  {
+    "context": "Editor",
+    "bindings": {
+      "cmd-/": "editor::ToggleComments",
+      "cmd-d": "editor::SelectNext",
+      "cmd-shift-l": "editor::SelectAllMatches",
+      "alt-up": "editor::MoveLineUp",
+      "alt-down": "editor::MoveLineDown",
+      "cmd-shift-k": "editor::DeleteLine",
+      "cmd-enter": "editor::NewlineBelow",
+      "cmd-shift-enter": "editor::NewlineAbove"
+    }
+  }
+]
+```
+
+### Split and Pane Management
+
+```json
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "cmd-k left": "workspace::ActivatePaneInDirection(Left)",
+      "cmd-k right": "workspace::ActivatePaneInDirection(Right)",
+      "cmd-k up": "workspace::ActivatePaneInDirection(Up)",
+      "cmd-k down": "workspace::ActivatePaneInDirection(Down)",
+      "cmd-k cmd-left": "pane::SplitLeft",
+      "cmd-k cmd-right": "pane::SplitRight",
+      "cmd-k cmd-up": "pane::SplitUp",
+      "cmd-k cmd-down": "pane::SplitDown"
+    }
+  }
+]
+```
+
+### Panel Toggles
+
+```json
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "cmd-b": "workspace::ToggleLeftDock",
+      "cmd-j": "workspace::ToggleBottomDock",
+      "cmd-k cmd-b": "project_panel::ToggleFocus",
+      "cmd-shift-e": "project_panel::ToggleFocus",
+      "cmd-shift-f": "workspace::NewSearch",
+      "cmd-shift-g": "git_panel::ToggleFocus"
+    }
+  }
+]
+```
+
+### Terminal
+
+```json
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-`": "terminal_panel::ToggleFocus",
+      "cmd-shift-c": "terminal::Copy",
+      "cmd-shift-v": "terminal::Paste"
+    }
+  },
+  {
+    "context": "Terminal",
+    "bindings": {
+      "cmd-k": "terminal::Clear"
+    }
+  }
+]
+```
+
+### Debugging
+
+```json
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "f5": "debugger::Start",
+      "shift-f5": "debugger::Stop",
+      "ctrl-shift-f5": "debugger::Restart",
+      "f9": "debugger::ToggleBreakpoint",
+      "f10": "debugger::StepOver",
+      "f11": "debugger::StepInto",
+      "shift-f11": "debugger::StepOut"
+    }
+  }
+]
+```
+
+## Vim Mode Keybindings
+
+When Vim mode is enabled, you can customize Vim-specific keybindings:
+
+```json
+[
+  {
+    "context": "VimControl",
+    "bindings": {
+      "space f f": "file_finder::Toggle",
+      "space b": "tab_switcher::Toggle",
+      "g d": "editor::GoToDefinition",
+      "g r": "editor::FindAllReferences",
+      "space c a": "editor::ToggleCodeActions"
+    }
+  },
+  {
+    "context": "VimInsert",
+    "bindings": {
+      "j k": "vim::NormalBefore"
+    }
+  }
+]
+```
+
+## Disabling Keybindings
+
+To disable a default keybinding, set it to `null`:
+
+```json
+[
+  {
+    "context": "Editor",
+    "bindings": {
+      "cmd-k cmd-c": null
+    }
+  }
+]
+```
+
+## Discovering Actions
+
+To find available actions:
+
+1. Open the Command Palette (`cmd-shift-p`)
+2. Search for an action
+3. The action identifier is shown in the list
+
+You can also check:
+- The default keymaps in Zed's source: `assets/keymaps/`
+- The Zed documentation for action references
+
+## Key Equivalents
+
+Some contexts support system-level key equivalents (menu accelerators):
+
+```json
+[
+  {
+    "context": "Workspace",
+    "use_key_equivalents": true,
+    "bindings": {
+      "cmd-q": "zed::Quit"
+    }
+  }
+]
+```
+
+## Platform-Specific Keybindings
+
+Keymap files are platform-specific by default. Zed uses:
+- `keymap.json` on Linux and Windows
+- `keymap.json` on macOS
+
+The `cmd` modifier automatically maps to the appropriate key on each platform:
+- macOS: Command key
+- Windows: Windows key  
+- Linux: Super key
+
+For platform-specific customization, use separate keymap files or conditional contexts.
+
+## Troubleshooting
+
+### Keybinding Not Working
+
+1. Check if another keybinding overrides it (user bindings take precedence)
+2. Verify the context matches your current focus
+3. Ensure the action name is correct
+4. Check for JSON syntax errors in your keymap file
+
+### Finding Key Conflicts
+
+Zed will show a warning if multiple keybindings conflict. Check the logs:
+- Command Palette: "zed: open logs"
+
+### Resetting to Defaults
+
+To reset keybindings to default:
+1. Delete or rename `~/.config/zed/keymap.json`
+2. Restart Zed
+
+The default keybindings will be restored based on your selected `base_keymap`.

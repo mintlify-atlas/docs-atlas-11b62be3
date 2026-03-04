@@ -1,0 +1,184 @@
+---
+title: Extensions Overview
+description: Extend Zed with languages, themes, debuggers, slash commands, and more
+---
+
+# Extensions Overview
+
+Zed extensions are modular packages that add functionality to the editor. Extensions can provide language support, themes, debuggers, AI tools, and custom commands.
+
+## What Extensions Can Do
+
+Zed extensions support a wide range of capabilities:
+
+### Language Support
+
+Extensions can add support for programming languages, including:
+
+- **Syntax highlighting** via Tree-sitter grammars
+- **Language servers** for IDE features (autocomplete, go-to-definition, diagnostics)
+- **Language configuration** (comment syntax, bracket pairs, file extensions)
+- **Code queries** for bracket matching, outline structure, and auto-indentation
+
+See [Language Extensions](./language-extensions.mdx) for details.
+
+### Themes and Visual Customization
+
+Extensions can customize Zed's appearance:
+
+- **Color themes** for light and dark modes
+- **Icon themes** for file and folder icons
+- **Syntax highlighting colors** for different token types
+
+See [Theme Extensions](./theme-extensions.mdx) for details.
+
+### Development Tools
+
+- **Debug adapters** for stepping through code and inspecting variables
+- **Slash commands** for custom AI assistant commands
+- **MCP servers** for AI context providers
+- **Agent servers** for custom AI integrations
+
+### Extension Capabilities
+
+Extensions run in a sandboxed WebAssembly environment and can:
+
+- Download and manage language server binaries
+- Install npm packages
+- Execute commands with explicit permissions
+- Read project files and environment variables
+- Provide custom completions and labels
+
+All capabilities are governed by a [permission system](https://github.com/zed-industries/zed/blob/main/docs/src/extensions/capabilities.md) to ensure security.
+
+## How Extensions Work
+
+Extensions are written in Rust and compiled to WebAssembly (WASM). The WebAssembly architecture provides:
+
+- **Security**: Extensions run in a sandboxed environment with restricted capabilities
+- **Performance**: Native-speed execution for language processing
+- **Cross-platform**: Extensions work on macOS, Linux, and Windows
+
+### Extension Structure
+
+An extension is a Git repository containing:
+
+```
+my-extension/
+  extension.toml          # Extension manifest
+  Cargo.toml             # Rust package configuration (optional)
+  src/lib.rs             # Extension code (optional)
+  languages/             # Language definitions (optional)
+    my-lang/
+      config.toml
+      highlights.scm
+  themes/                # Theme files (optional)
+    my-theme.json
+```
+
+### Extension Manifest
+
+The `extension.toml` file defines the extension's metadata and capabilities:
+
+```toml
+id = "my-extension"
+name = "My Extension"
+version = "0.1.0"
+schema_version = 1
+authors = ["Your Name <you@example.com>"]
+description = "Adds support for MyLang"
+repository = "https://github.com/username/my-extension"
+
+[language_servers.mylang-lsp]
+name = "MyLang Language Server"
+language = "MyLang"
+
+[grammars.mylang]
+repository = "https://github.com/username/tree-sitter-mylang"
+commit = "abc123..."
+```
+
+## Extension Registry
+
+Zed extensions are published to the [zed-industries/extensions](https://github.com/zed-industries/extensions) registry. The registry:
+
+- Hosts extension metadata and manifests
+- Builds extensions to WASM
+- Distributes extensions to users
+- Manages version updates
+
+Users can browse and install extensions from the Extensions panel in Zed.
+
+## Extension API
+
+Extensions interact with Zed through the [`zed_extension_api`](https://docs.rs/zed_extension_api/latest/zed_extension_api/) Rust crate. The API provides:
+
+### Core Traits
+
+```rust
+pub trait Extension: Send + Sync {
+    fn new() -> Self;
+    
+    // Language server methods
+    fn language_server_command(&mut self, id: &LanguageServerId, worktree: &Worktree) -> Result<Command>;
+    fn language_server_initialization_options(&mut self, id: &LanguageServerId, worktree: &Worktree) -> Result<Option<serde_json::Value>>;
+    fn language_server_workspace_configuration(&mut self, id: &LanguageServerId, worktree: &Worktree) -> Result<Option<serde_json::Value>>;
+    
+    // Completion customization
+    fn label_for_completion(&self, id: &LanguageServerId, completion: Completion) -> Option<CodeLabel>;
+    fn label_for_symbol(&self, id: &LanguageServerId, symbol: Symbol) -> Option<CodeLabel>;
+    
+    // Slash commands
+    fn complete_slash_command_argument(&self, command: SlashCommand, args: Vec<String>) -> Result<Vec<SlashCommandArgumentCompletion>>;
+    fn run_slash_command(&self, command: SlashCommand, args: Vec<String>, worktree: Option<&Worktree>) -> Result<SlashCommandOutput>;
+    
+    // Debug adapters
+    fn get_dap_binary(&mut self, adapter: String, config: DebugTaskDefinition, worktree: &Worktree) -> Result<DebugAdapterBinary>;
+    
+    // Context servers
+    fn context_server_command(&mut self, id: &ContextServerId, project: &Project) -> Result<Command>;
+}
+```
+
+### Helper Functions
+
+The API provides utilities for common tasks:
+
+```rust
+// Download and extract files
+zed::download_file(url, path, DownloadedFileType::GzipTar)?;
+
+// Get latest GitHub release
+let release = zed::latest_github_release("owner/repo", options)?;
+
+// Install npm packages
+zed::npm_install_package("typescript", "5.0.0")?;
+
+// Execute commands
+Command::new("node").args(["--version"]).output()?;
+
+// Get platform information
+let (os, arch) = zed::current_platform();
+
+// Update installation status
+zed::set_language_server_installation_status(
+    language_server_id,
+    &LanguageServerInstallationStatus::Downloading,
+);
+```
+
+## Example Extensions
+
+The Zed repository includes several example extensions:
+
+- **[test-extension](https://github.com/zed-industries/zed/tree/main/extensions/test-extension)**: Demonstrates language server installation and configuration
+- **[html](https://github.com/zed-industries/zed/tree/main/extensions/html)**: Shows npm package installation and LSP integration
+- **[slash-commands-example](https://github.com/zed-industries/zed/tree/main/extensions/slash-commands-example)**: Implements custom slash commands
+- **[glsl](https://github.com/zed-industries/zed/tree/main/extensions/glsl)**: Simple grammar-only extension
+
+## Next Steps
+
+- [Installing Extensions](./installing.mdx): Browse and install extensions from the marketplace
+- [Developing Extensions](./developing.mdx): Create your own extensions
+- [Language Extensions](./language-extensions.mdx): Add programming language support
+- [Theme Extensions](./theme-extensions.mdx): Create custom themes

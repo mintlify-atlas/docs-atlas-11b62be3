@@ -1,0 +1,367 @@
+---
+title: Screen Sharing
+description: Share your screen and view others' screens during collaboration sessions in Zed
+---
+
+## Overview
+
+Zed's screen sharing feature allows participants in a call to share their entire screen or specific windows with others. Built on LiveKit's video infrastructure, screen sharing provides high-quality, low-latency screen transmission for effective collaboration.
+
+## Starting Screen Share
+
+### Sharing Your Screen
+
+To share your screen during an active call:
+
+1. Join a channel or call
+2. Use one of these methods:
+   - Click the "Share Screen" button in the call interface
+   - Use the "Screen Share" action from the command palette
+   - Use the keyboard shortcut (if configured)
+
+3. Select what to share:
+   - **Entire screen**: Share everything visible on your display
+   - **Application window**: Share a specific application
+   - **Zed window**: Share just your Zed editor
+
+4. Confirm your selection
+5. Your screen appears in the collaboration panel for all participants
+
+### Screen Share States
+
+The screen share button indicates current status:
+
+- **Ready to share**: Button is clickable, no screen currently shared
+- **Sharing**: Button shows "Stop Sharing" with an active indicator
+- **Another user sharing**: See their screen feed in the panel
+
+## Viewing Shared Screens
+
+When another participant shares their screen:
+
+### In the Collaboration Panel
+
+1. A "Screen" item appears under the sharing participant's name
+2. An icon indicates active screen share
+3. Click the screen item to open the shared screen view
+
+### Opening the Screen Share View
+
+Clicking a shared screen:
+
+1. Opens a new editor pane with the video feed
+2. The screen share scales to fit the available space
+3. Video quality adjusts automatically based on connection
+
+### Multiple Shared Screens
+
+If multiple participants share screens:
+
+- Each appears separately in the collaboration panel
+- Open multiple screen shares simultaneously in different panes
+- Switch between them like regular editor tabs
+
+## Stopping Screen Share
+
+### Stopping Your Share
+
+To stop sharing your screen:
+
+1. Click the "Stop Sharing" button in the call interface
+2. Or use the "Screen Share" action again (toggles)
+3. Or leave the call (automatically stops sharing)
+
+### When Others Stop Sharing
+
+When a participant stops sharing:
+
+- The screen share view automatically closes
+- A notification may appear if you were actively viewing
+- The screen item disappears from the collaboration panel
+
+## Screen Share Features
+
+### Presentation Mode
+
+When sharing your screen, consider:
+
+- **Hide sensitive information**: Close unrelated windows or tabs
+- **Increase font size**: Make code more readable for viewers
+- **Use focused editor**: Share just Zed window instead of entire screen
+- **Disable notifications**: Prevent interruptions during presentation
+
+### Video Quality
+
+Screen share quality adapts automatically:
+
+- **High bandwidth**: Full resolution, smooth frame rate
+- **Lower bandwidth**: Reduced resolution to maintain stability
+- **Network changes**: Quality adjusts dynamically during the share
+
+### Audio During Screen Share
+
+Screen sharing works alongside voice communication:
+
+- Continue talking while sharing
+- Mute/unmute without affecting screen share
+- Audio and video are independent streams
+
+## Use Cases
+
+### Code Review
+
+Share your screen to walk through code:
+
+1. Open the files you want to review
+2. Share your Zed window
+3. Navigate through the code while discussing
+4. Viewers follow along in real-time
+
+### Debugging Sessions
+
+Collaborate on fixing issues:
+
+1. Share your screen showing the bug
+2. Run the application and demonstrate the problem
+3. Teammates can suggest fixes while watching
+4. Switch who's sharing to try different approaches
+
+### Pair Programming
+
+Share your screen while coding together:
+
+1. One person shares their screen
+2. Both participants discuss the code
+3. The sharer makes edits while the other observes
+4. Switch roles by stopping one share and starting another
+
+### Teaching and Onboarding
+
+Use screen sharing for education:
+
+1. Instructor shares their screen
+2. Demonstrates features or workflows
+3. Students observe and ask questions
+4. Students can share their screens to show their work
+
+### Design Review
+
+Review designs and mockups:
+
+1. Share your screen with design tools open
+2. Walk through designs with the team
+3. Get immediate feedback
+4. Switch to code view to discuss implementation
+
+## Screen Share Controls
+
+### For the Sharer
+
+When sharing your screen, you have these controls:
+
+- **Stop Sharing**: Immediately ends the screen share
+- **Mute Audio**: Mutes microphone (independent from screen share)
+- **Leave Call**: Stops sharing and exits the call
+
+### For Viewers
+
+When viewing a shared screen:
+
+- **Close View**: Closes the screen share pane
+- **Resize Pane**: Adjust the video feed size
+- **Full Screen**: Maximize the screen share (depends on implementation)
+
+## Permission and Privacy
+
+### System Permissions
+
+Screen sharing requires system-level permissions:
+
+**macOS:**
+1. System Settings → Privacy & Security → Screen Recording
+2. Enable screen recording for Zed
+3. Restart Zed if permission was just granted
+
+**Linux:**
+- Permissions depend on your desktop environment
+- XDG Desktop Portal typically handles permissions
+- Grant access when prompted
+
+**Windows:**
+- Usually no additional permissions needed
+- Some corporate environments may restrict screen capture
+
+### What Gets Shared
+
+Be aware of what's visible when sharing:
+
+- **Entire Screen**: Everything, including taskbar, notifications, other apps
+- **Application Window**: Only the selected application's content
+- **Notifications**: May appear in screen share (disable beforehand)
+- **Background Apps**: Can be seen if they overlap or you switch windows
+
+### Privacy Best Practices
+
+1. **Review screen before sharing**: Check for sensitive information
+2. **Use window sharing**: More privacy than full screen
+3. **Close unnecessary tabs**: Reduce accidental exposure
+4. **Disable notifications**: Prevent pop-ups during share
+5. **Use a clean workspace**: Close personal or confidential materials
+
+## Role-Based Access
+
+Screen sharing permissions depend on your role in the channel:
+
+### Admin and Member Roles
+
+- Can share screens freely
+- Can view others' shared screens
+- No restrictions on screen sharing
+
+### Talker Role
+
+- Can view shared screens
+- May have restrictions on sharing own screen
+- Permissions configurable by channel admins
+
+### Guest Role
+
+- Can view shared screens (if granted)
+- Cannot share own screen
+- Most restricted access level
+
+## Technical Details
+
+### Video Streaming
+
+Screen shares use LiveKit's video infrastructure:
+
+- **Codec**: VP8 or H.264 (automatic selection)
+- **Resolution**: Up to 1080p (network dependent)
+- **Frame Rate**: 15-30 fps (adjusts dynamically)
+- **Bitrate**: Adaptive based on connection quality
+
+### Network Requirements
+
+For optimal screen sharing:
+
+- **Upload speed**: 2-5 Mbps minimum (for sharer)
+- **Download speed**: 2-5 Mbps minimum (for viewer)
+- **Latency**: Lower is better (< 100ms ideal)
+- **Stable connection**: Reduces quality fluctuations
+
+### Reconnection Behavior
+
+If disconnected during screen share:
+
+1. Screen share automatically stops
+2. Connection attempts to re-establish
+3. Resume sharing manually after reconnection
+4. Viewers are notified of the interruption
+
+## Troubleshooting
+
+### Cannot Start Screen Share
+
+**Check permissions:**
+- Verify screen recording permission on your OS
+- Restart Zed after granting permissions
+
+**Check role:**
+- Ensure you're not in Guest role
+- Contact channel admin if needed
+
+**Check connection:**
+- Verify you're in an active call
+- Ensure stable internet connection
+
+### Poor Screen Share Quality
+
+**Optimize settings:**
+- Close bandwidth-intensive applications
+- Share a single window instead of full screen
+- Check your upload speed
+
+**Network troubleshooting:**
+- Test your internet connection speed
+- Use wired connection instead of Wi-Fi if possible
+- Reduce other network activity
+
+### Screen Share Not Visible
+
+**For viewers:**
+- Click the "Screen" item in the collaboration panel
+- Check if the sharer is still in the call
+- Verify your download bandwidth
+
+**For sharers:**
+- Confirm sharing started successfully
+- Check that participants can see your video
+- Try stopping and restarting the share
+
+### Screen Share Freezes
+
+**Connection issues:**
+- Check network stability
+- Reduce screen share resolution (stop and restart)
+- Ask other participants if they see the same issue
+
+**Performance issues:**
+- Close unnecessary applications
+- Share a smaller window
+- Restart Zed
+
+### Screen Share Automatically Stopped
+
+**Common causes:**
+- Network disconnection
+- System went to sleep
+- Application lost screen capture permission
+- Call disconnection
+
+**Resolution:**
+- Verify connection status
+- Restart screen share manually
+- Check system permissions
+
+## Advanced Tips
+
+### Efficient Screen Sharing
+
+1. **Share Zed window only**: More focused, better performance
+2. **Increase UI size**: Use Cmd/Ctrl + Plus for better visibility
+3. **Use split panes**: Show multiple files side-by-side
+4. **Enable line numbers**: Easier to reference specific lines
+5. **Consistent theme**: Use high-contrast themes for clarity
+
+### Collaboration Workflows
+
+**Round-robin sharing:**
+- Each team member shares for a time slot
+- Rotate through different parts of the codebase
+- Good for distributed teams
+
+**Expert consultation:**
+- Junior developer shares screen
+- Senior developer provides guidance
+- Learn by watching and explaining
+
+**Mob programming:**
+- One person shares and codes
+- Entire team contributes ideas
+- Rotate the driver periodically
+
+## Keyboard Shortcuts
+
+Common shortcuts while screen sharing:
+
+- **Toggle screen share**: Custom bindable action `workspace::ScreenShare`
+- **Close shared screen view**: Standard close pane shortcuts
+- **Switch between panes**: Navigate like normal editor panes
+
+Configure custom shortcuts in your keymap for quick access.
+
+## Next Steps
+
+- [Collaboration Overview](/collaboration/overview) - Learn about all collaboration features
+- [Channels Guide](/collaboration/channels) - Create and manage collaboration channels

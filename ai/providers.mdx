@@ -1,0 +1,437 @@
+---
+title: AI Providers
+description: Setup guide for AI model providers in Zed
+---
+
+Zed supports multiple AI providers, giving you flexibility in choosing models based on cost, performance, privacy, and availability.
+
+## Supported Providers
+
+- **Anthropic** - Claude models (3.5 Sonnet, 3.7 Sonnet, Opus, Haiku)
+- **OpenAI** - GPT models (GPT-4o, GPT-4o-mini, o1, o3-mini)
+- **Google AI** - Gemini models (Gemini 2.0, Gemini 1.5 Pro)
+- **xAI** - Grok models
+- **Zed Cloud** - Proxied access to various models
+- **Ollama** - Local open-source models
+- **LM Studio** - Local model hosting
+- **DeepSeek** - DeepSeek models
+- **Mistral** - Mistral models
+- **OpenRouter** - Access to multiple providers
+- **Vercel AI** - Vercel AI SDK compatible models
+- **AWS Bedrock** - Amazon Bedrock models
+- **Custom OpenAI-compatible APIs**
+
+## Quick Start: Zed Cloud (Easiest)
+
+Zed Cloud provides the simplest setup - no API keys required:
+
+1. Sign in to Zed with your GitHub account
+2. Open Settings (`Cmd+,`) → Language Models
+3. Zed Cloud should be automatically configured
+4. Select a model and start using AI features
+
+**Available via Zed Cloud:**
+- Claude 3.5 Sonnet
+- Claude 3.5 Haiku
+- GPT-4o
+- GPT-4o-mini
+- Gemini 1.5 Pro
+
+**Limitations:**
+- Rate limits based on your Zed subscription
+- Requires internet connection
+- Limited model selection
+
+## Anthropic (Claude)
+
+### Getting an API Key
+
+1. Sign up at [console.anthropic.com](https://console.anthropic.com)
+2. Navigate to API Keys
+3. Create a new API key
+4. Copy the key (starts with `sk-ant-`)
+
+### Configuration in Zed
+
+1. Open Settings → Language Models
+2. Under "Anthropic", click "Authenticate"
+3. Paste your API key
+4. Select a default model
+
+### Settings Example
+
+```json
+{
+  "language_models": {
+    "anthropic": {
+      "api_url": "https://api.anthropic.com",
+      "available_models": [
+        {
+          "name": "claude-3-5-sonnet-20241022",
+          "display_name": "Claude 3.5 Sonnet",
+          "max_tokens": 200000,
+          "max_output_tokens": 8192,
+          "cache_configuration": {
+            "max_cache_anchors": 10,
+            "should_speculate": true,
+            "min_total_token": 2048
+          }
+        },
+        {
+          "name": "claude-3-7-sonnet-20250219",
+          "display_name": "Claude 3.7 Sonnet (Extended Thinking)",
+          "max_tokens": 200000,
+          "max_output_tokens": 8192,
+          "mode": {
+            "type": "thinking",
+            "budget_tokens": 10000
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+**Recommended models:**
+- **claude-3-5-sonnet-20241022** - Best balance of intelligence and speed
+- **claude-3-7-sonnet-20250219** - Extended thinking for complex tasks
+- **claude-3-5-haiku-20241022** - Fast and economical
+
+### Prompt Caching
+
+Anthropic supports prompt caching to reduce costs on repeated context:
+
+```json
+{
+  "cache_configuration": {
+    "max_cache_anchors": 10,      // Number of cache breakpoints
+    "should_speculate": true,       // Speculative caching
+    "min_total_token": 2048         // Minimum tokens to enable caching
+  }
+}
+```
+
+## OpenAI
+
+### Getting an API Key
+
+1. Sign up at [platform.openai.com](https://platform.openai.com)
+2. Navigate to API Keys
+3. Create a new secret key
+4. Copy the key (starts with `sk-`)
+
+### Configuration in Zed
+
+1. Open Settings → Language Models
+2. Under "OpenAI", click "Authenticate"
+3. Paste your API key
+4. Select a default model
+
+### Settings Example
+
+```json
+{
+  "language_models": {
+    "openai": {
+      "api_url": "https://api.openai.com/v1",
+      "available_models": [
+        {
+          "name": "gpt-4o",
+          "display_name": "GPT-4o",
+          "max_tokens": 128000,
+          "max_output_tokens": 16384
+        },
+        {
+          "name": "gpt-4o-mini",
+          "display_name": "GPT-4o Mini",
+          "max_tokens": 128000,
+          "max_output_tokens": 16384
+        },
+        {
+          "name": "o1",
+          "display_name": "o1",
+          "max_tokens": 200000,
+          "max_completion_tokens": 100000,
+          "reasoning_effort": "medium"
+        }
+      ]
+    }
+  }
+}
+```
+
+**Recommended models:**
+- **gpt-4o** - Latest and most capable
+- **gpt-4o-mini** - Fast and cost-effective
+- **o1** - Reasoning-focused for complex problems
+
+## Google AI (Gemini)
+
+### Getting an API Key
+
+1. Sign up at [aistudio.google.com](https://aistudio.google.com)
+2. Click "Get API key"
+3. Copy the generated key
+
+### Configuration in Zed
+
+1. Open Settings → Language Models
+2. Under "Google AI", click "Authenticate"
+3. Paste your API key
+
+### Settings Example
+
+```json
+{
+  "language_models": {
+    "google": {
+      "api_url": "https://generativelanguage.googleapis.com",
+      "available_models": [
+        {
+          "name": "gemini-2.0-flash-exp",
+          "display_name": "Gemini 2.0 Flash",
+          "max_tokens": 1048576
+        },
+        {
+          "name": "gemini-1.5-pro-002",
+          "display_name": "Gemini 1.5 Pro",
+          "max_tokens": 2097152
+        }
+      ]
+    }
+  }
+}
+```
+
+**Recommended models:**
+- **gemini-2.0-flash-exp** - Fast multimodal model
+- **gemini-1.5-pro-002** - Extremely large context window (2M tokens)
+
+## Ollama (Local Models)
+
+### Installation
+
+1. Download Ollama from [ollama.ai](https://ollama.ai)
+2. Install the application
+3. Pull a model: `ollama pull qwen2.5-coder:32b`
+4. Start Ollama (usually starts automatically)
+
+### Configuration in Zed
+
+Ollama is auto-discovered on `http://localhost:11434`:
+
+```json
+{
+  "language_models": {
+    "ollama": {
+      "api_url": "http://localhost:11434",
+      "auto_discover": true,
+      "available_models": [
+        {
+          "name": "qwen2.5-coder:32b",
+          "display_name": "Qwen 2.5 Coder 32B",
+          "max_tokens": 32768,
+          "supports_tools": true,
+          "supports_images": false,
+          "keep_alive": "10m"
+        },
+        {
+          "name": "deepseek-r1:32b",
+          "display_name": "DeepSeek R1 32B",
+          "max_tokens": 65536,
+          "supports_tools": true,
+          "supports_thinking": true
+        }
+      ]
+    }
+  }
+}
+```
+
+**Recommended models:**
+- **qwen2.5-coder:32b** - Excellent for code generation
+- **deepseek-r1:32b** - Strong reasoning capabilities
+- **llama3.2:3b** - Fast and lightweight
+
+**Benefits:**
+- Complete privacy (runs locally)
+- No API costs
+- No rate limits
+- Works offline
+
+**Requirements:**
+- Powerful GPU recommended (32B models need ~20GB VRAM)
+- Or use CPU with sufficient RAM (slower)
+
+## Custom OpenAI-Compatible APIs
+
+Connect to any OpenAI-compatible API:
+
+```json
+{
+  "language_models": {
+    "openai_compatible": {
+      "my_local_llm": {
+        "api_url": "http://localhost:8080/v1",
+        "available_models": [
+          {
+            "name": "my-model",
+            "display_name": "My Custom Model",
+            "max_tokens": 8192,
+            "capabilities": {
+              "tools": true,
+              "images": false,
+              "parallel_tool_calls": true
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+Compatible with:
+- LM Studio
+- Text Generation Web UI
+- vLLM
+- LocalAI
+- Any OpenAI-compatible inference server
+
+## AWS Bedrock
+
+### Prerequisites
+
+1. AWS account with Bedrock access
+2. AWS CLI installed and configured
+3. Model access enabled in Bedrock console
+
+### Configuration
+
+```json
+{
+  "language_models": {
+    "bedrock": {
+      "region": "us-east-1",
+      "profile": "default",
+      "authentication_method": "named_profile",
+      "available_models": [
+        {
+          "name": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+          "display_name": "Claude 3.5 Sonnet (Bedrock)",
+          "max_tokens": 200000
+        }
+      ]
+    }
+  }
+}
+```
+
+**Authentication methods:**
+- `named_profile` - Use AWS CLI profile
+- `sso` - AWS SSO
+- `api_key` - Access key and secret
+- `default` - Environment variables or instance role
+
+## OpenRouter
+
+Access multiple providers through a single API:
+
+### Getting an API Key
+
+1. Sign up at [openrouter.ai](https://openrouter.ai)
+2. Navigate to Keys
+3. Create a new key
+
+### Configuration
+
+```json
+{
+  "language_models": {
+    "open_router": {
+      "api_url": "https://openrouter.ai/api/v1",
+      "available_models": [
+        {
+          "name": "anthropic/claude-3.5-sonnet",
+          "display_name": "Claude 3.5 Sonnet (via OpenRouter)",
+          "max_tokens": 200000
+        },
+        {
+          "name": "openai/gpt-4o",
+          "display_name": "GPT-4o (via OpenRouter)",
+          "max_tokens": 128000
+        }
+      ]
+    }
+  }
+}
+```
+
+**Benefits:**
+- Single API key for multiple providers
+- Automatic fallback between providers
+- Pay-as-you-go pricing
+
+## Comparing Providers
+
+| Provider | Best For | Privacy | Cost | Offline |
+|----------|----------|---------|------|--------|
+| Zed Cloud | Easiest setup | Moderate | Included | No |
+| Anthropic | Quality & reasoning | Low | $$$ | No |
+| OpenAI | General purpose | Low | $$$ | No |
+| Google AI | Large context | Low | $$ | No |
+| Ollama | Privacy & offline | High | Free | Yes |
+| Bedrock | Enterprise | High | $$$ | No |
+| OpenRouter | Flexibility | Low | $$ | No |
+
+## Troubleshooting
+
+### "Missing API key" error
+
+1. Check Settings → Language Models
+2. Click "Authenticate" for your provider
+3. Ensure the key is correct (no extra spaces)
+4. Try generating a new API key
+
+### "Rate limit exceeded"
+
+- Wait before retrying
+- Check your provider's usage limits
+- Consider upgrading your account
+- Use a different provider
+
+### "Model not found"
+
+- Verify the model name exactly matches the provider's API
+- Check that you have access to the model
+- For Bedrock, ensure model access is enabled
+
+### Ollama not connecting
+
+1. Ensure Ollama is running: `ollama list`
+2. Check the API URL: `http://localhost:11434`
+3. Try pulling the model: `ollama pull <model-name>`
+4. Check firewall settings
+
+### Slow responses
+
+- For local models: upgrade hardware or use smaller models
+- For API providers: check internet connection
+- Try a different model (e.g., mini variants)
+
+## Best Practices
+
+1. **Start with Zed Cloud** for quick setup
+2. **Keep API keys secure** - never commit them to git
+3. **Use environment variables** for shared configurations
+4. **Monitor costs** on paid providers
+5. **Try local models** for privacy-sensitive projects
+6. **Use different providers** for different tasks
+7. **Cache aggressively** with Anthropic to reduce costs
+
+## Next Steps
+
+- [Configure AI settings](/ai/configuration)
+- [Learn to use the Agent Panel](/ai/agent-panel)
+- [Master the Inline Assistant](/ai/inline-assistant)
