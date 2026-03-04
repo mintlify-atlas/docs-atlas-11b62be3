@@ -1,0 +1,145 @@
+{
+  "projectType": "general",
+  "projectName": "Zed",
+  "projectDescription": "A high-performance, multiplayer code editor built with Rust from the creators of Atom and Tree-sitter.",
+  "theme": "palm",
+  "primaryColor": "#064ccd",
+  "lightColor": "#7c7c7c",
+  "darkColor": "#070707",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/editing",
+              "features/navigation",
+              "features/terminal",
+              "features/git",
+              "features/tasks"
+            ]
+          },
+          {
+            "group": "AI Features",
+            "pages": [
+              "ai/overview",
+              "ai/agent-panel",
+              "ai/inline-assistant",
+              "ai/configuration",
+              "ai/providers"
+            ]
+          },
+          {
+            "group": "Collaboration",
+            "pages": [
+              "collaboration/overview",
+              "collaboration/channels",
+              "collaboration/screen-sharing"
+            ]
+          },
+          {
+            "group": "Extensions",
+            "pages": [
+              "extensions/overview",
+              "extensions/installing",
+              "extensions/developing",
+              "extensions/language-extensions",
+              "extensions/theme-extensions"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/settings",
+              "configuration/keybindings",
+              "configuration/themes",
+              "configuration/languages"
+            ]
+          },
+          {
+            "group": "Remote Development",
+            "pages": [
+              "remote/overview",
+              "remote/ssh",
+              "remote/dev-containers"
+            ]
+          },
+          {
+            "group": "Platform Support",
+            "pages": [
+              "platforms/macos",
+              "platforms/linux",
+              "platforms/windows"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "CLI Reference",
+        "groups": [
+          {
+            "group": "CLI Commands",
+            "pages": [
+              "cli/overview",
+              "cli/open",
+              "cli/diff",
+              "cli/options"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Contributing",
+        "groups": [
+          {
+            "group": "Development",
+            "pages": [
+              "contributing/overview",
+              "contributing/building-macos",
+              "contributing/building-linux",
+              "contributing/building-windows",
+              "contributing/architecture"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "High-performance editing with GPU acceleration",
+    "Real-time collaboration with voice and screen sharing",
+    "Integrated AI assistance with multiple LLM providers",
+    "Multi-language support with LSP integration",
+    "Extension system for languages, themes, and features",
+    "Built-in terminal and task runner",
+    "Git integration with visual diff and blame",
+    "Remote development via SSH and dev containers",
+    "Cross-platform support (macOS, Linux, Windows)",
+    "Vim and Helix keybinding modes"
+  ],
+  "publicApiSurface": [
+    "zed CLI - open files, projects, and URLs",
+    "zed --wait - wait for files to close",
+    "zed --diff - compare files and directories",
+    "zed --new - create new workspace",
+    "Extension API - language servers",
+    "Extension API - themes and icons",
+    "Extension API - slash commands",
+    "Extension API - debugger adapters",
+    "Extension API - agent servers",
+    "Settings JSON schema",
+    "Keymap JSON schema",
+    "Collaboration channels API",
+    "GPUI framework (UI library)"
+  ]
+}
